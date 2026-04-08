@@ -19,6 +19,48 @@ body {
   margin: 0;
 }
 
+/* ── Home: Warm gradient (matching poster) ── */
+
+.home-bg {
+  background: linear-gradient(160deg, #BEF264 0%, #6EE7B7 25%, #34D399 50%, #2DD4BF 75%, #06B6D4 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Cloud/dreamy overlay at bottom */
+.home-bg::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -10%;
+  right: -10%;
+  height: 35%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 40%, transparent 70%);
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+/* Outline text effect */
+.text-outline {
+  color: white;
+  -webkit-text-stroke: 2px #333;
+  text-shadow:
+    3px 3px 0 #333,
+    -1px -1px 0 #333,
+    1px -1px 0 #333,
+    -1px 1px 0 #333;
+}
+@media (min-width: 768px) {
+  .text-outline {
+    -webkit-text-stroke: 3px #333;
+    text-shadow:
+      4px 4px 0 #333,
+      -1px -1px 0 #333,
+      1px -1px 0 #333,
+      -1px 1px 0 #333;
+  }
+}
+
 .project-card {
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
@@ -31,20 +73,222 @@ body {
   transform: translateY(-2px);
 }
 
+/* ── Ceremony: Liquid Glass ── */
+
 .ceremony-bg {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: #050510;
+  overflow: hidden;
+  position: relative;
 }
+
+/* Animated gradient orbs */
+.ceremony-bg::before,
+.ceremony-bg::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.4;
+  animation: orbFloat 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.ceremony-bg::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0,100,108,0.6) 0%, transparent 70%);
+  top: -200px;
+  left: -100px;
+}
+.ceremony-bg::after {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(54,51,99,0.6) 0%, transparent 70%);
+  bottom: -200px;
+  right: -100px;
+  animation-delay: -6s;
+}
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, 40px) scale(1.15); }
+  100% { transform: translate(-30px, 80px) scale(0.95); }
+}
+
+/* Third orb (yellow accent) */
+.ceremony-orb-accent {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,245,0,0.15) 0%, transparent 70%);
+  filter: blur(100px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: orbPulse 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes orbPulse {
+  0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.8); }
+  100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+/* Glass card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Glass pill badge */
+.glass-pill {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Winner reveal animation */
 .ceremony-reveal {
-  animation: revealIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: liquidReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-@keyframes revealIn {
-  from { opacity: 0; transform: scale(0.8) translateY(30px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+@keyframes liquidReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(40px);
+    filter: blur(10px);
+  }
+  60% {
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
 }
+
+/* Title glow */
 .ceremony-title {
-  animation: titleGlow 2s ease-in-out infinite alternate;
+  animation: liquidGlow 3s ease-in-out infinite alternate;
 }
-@keyframes titleGlow {
-  from { text-shadow: 0 0 10px rgba(255,245,0,0.3); }
-  to { text-shadow: 0 0 30px rgba(255,245,0,0.6), 0 0 60px rgba(255,245,0,0.2); }
+@keyframes liquidGlow {
+  0% {
+    text-shadow:
+      0 0 20px rgba(255,245,0,0.2),
+      0 0 40px rgba(255,245,0,0.1);
+  }
+  100% {
+    text-shadow:
+      0 0 40px rgba(255,245,0,0.5),
+      0 0 80px rgba(255,245,0,0.2),
+      0 0 120px rgba(255,245,0,0.1);
+  }
+}
+
+/* Shimmer effect on glass card border */
+.glass-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.glass-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(255,255,255,0.05) 10%,
+    transparent 20%,
+    transparent 80%,
+    rgba(255,255,255,0.05) 90%,
+    transparent 100%
+  );
+  animation: shimmerRotate 8s linear infinite;
+  pointer-events: none;
+}
+@keyframes shimmerRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Trophy icon pulse */
+.trophy-pulse {
+  animation: trophyPulse 2s ease-in-out infinite;
+}
+@keyframes trophyPulse {
+  0%, 100% { transform: translate(-50%, 0) scale(1); }
+  50% { transform: translate(-50%, 0) scale(1.08); }
+}
+
+/* Floating particles */
+.ceremony-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ceremony-particles span {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  animation: particleFloat linear infinite;
+}
+@keyframes particleFloat {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+/* Intro logo ring */
+.logo-ring {
+  position: relative;
+}
+.logo-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,245,0,0.6),
+    rgba(0,100,108,0.4),
+    rgba(54,51,99,0.4),
+    rgba(255,245,0,0.6)
+  );
+  animation: ringRotate 4s linear infinite;
+  filter: blur(2px);
+}
+.logo-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #FFF500;
+}
+@keyframes ringRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Vote count counter animation */
+.vote-count {
+  display: inline-block;
+  animation: countReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+@keyframes countReveal {
+  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
