@@ -152,14 +152,14 @@ export default function Vote() {
               onChange={(e) => { setVoterName(e.target.value); setError('') }}
               onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
               placeholder="Nombre Completo"
-              className="w-full border-2 border-gray-200 rounded-xl p-4 text-center text-lg focus:border-udem-yellow outline-none"
+              className="w-full border-2 border-gray-200 rounded-xl p-4 text-center text-lg focus:border-udem-black/40 outline-none"
               autoFocus
             />
             {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
             <button
               onClick={handleNameSubmit}
               disabled={loading}
-              className="mt-4 w-full bg-udem-yellow text-udem-black font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-4 w-full bg-udem-black text-white font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Comenzar'}
             </button>
@@ -175,7 +175,7 @@ export default function Vote() {
       <Layout showBack>
         <div className="max-w-lg mx-auto p-4 pb-32">
           <div className="text-center mb-6 mt-4">
-            <span className="text-xs font-bold bg-ead-indigo text-white px-3 py-1 rounded-full">
+            <span className="text-xs font-bold bg-udem-black text-white px-3 py-1 rounded-full">
               VOTO FINAL
             </span>
             <h1 className="text-xl font-bold mt-3">Mejor Proyecto EAD</h1>
@@ -203,7 +203,7 @@ export default function Vote() {
           <button
             onClick={handleSubmitVotes}
             disabled={loading || !generalVote}
-            className="w-full max-w-lg mx-auto bg-udem-yellow text-udem-black font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5" /> Enviar Votos</>}
           </button>
@@ -225,12 +225,12 @@ export default function Vote() {
               <div
                 key={c.key}
                 className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                  i < currentCareerIdx ? 'bg-ead-teal' : i === currentCareerIdx ? 'bg-udem-yellow' : 'bg-gray-200'
+                  i < currentCareerIdx ? 'bg-udem-black' : i === currentCareerIdx ? 'bg-udem-black' : 'bg-udem-black/20'
                 }`}
               />
             ))}
           </div>
-          <span className="text-xs font-bold bg-ead-teal text-white px-3 py-1 rounded-full">
+          <span className="text-xs font-bold bg-udem-black text-white px-3 py-1 rounded-full">
             {currentCareer.key} — {currentCareerIdx + 1}/6
           </span>
           <h1 className="text-xl font-bold mt-3">{currentCareer.name}</h1>
@@ -262,7 +262,7 @@ export default function Vote() {
         <button
           onClick={handleNextCareer}
           disabled={loading || !careerVotes[currentCareer.key]}
-          className="w-full max-w-lg mx-auto bg-udem-yellow text-udem-black font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
             <>

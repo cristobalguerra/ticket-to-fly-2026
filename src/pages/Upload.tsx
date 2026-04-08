@@ -78,7 +78,7 @@ export default function Upload() {
               <select
                 value={career}
                 onChange={(e) => setCareer(e.target.value as Career)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-yellow outline-none"
+                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none"
               >
                 {CAREERS.map((c) => (
                   <option key={c.key} value={c.key}>{c.key} — {c.name}</option>
@@ -93,7 +93,7 @@ export default function Upload() {
                 maxLength={100}
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-yellow outline-none"
+                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none"
                 placeholder="Mi proyecto"
               />
             </div>
@@ -105,7 +105,7 @@ export default function Upload() {
                 maxLength={150}
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-yellow outline-none"
+                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none"
                 placeholder="Nombre del alumno o equipo"
               />
             </div>
@@ -116,14 +116,14 @@ export default function Upload() {
                 maxLength={280}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-yellow outline-none resize-none h-24"
+                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none resize-none h-24"
                 placeholder="Breve descripcion del proyecto"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold mb-1">Imagen de Cover</label>
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-udem-yellow transition-colors">
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-udem-black/30 transition-colors">
                 {imagePreview ? (
                   <img src={imagePreview} alt="Preview" className="max-h-48 rounded-lg object-contain" />
                 ) : (
@@ -145,7 +145,7 @@ export default function Upload() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-udem-yellow text-udem-black font-bold py-3 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-udem-black text-white font-bold py-3 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
               {loading ? 'Subiendo...' : 'Agregar Proyecto'}
@@ -163,7 +163,7 @@ export default function Upload() {
                     <img src={p.coverUrl} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-ead-teal">{p.career}</span>
+                    <span className="text-xs font-bold text-udem-black">{p.career}</span>
                     <p className="font-semibold text-sm truncate">{p.projectName}</p>
                     <p className="text-xs text-gray-400 truncate">{p.teamName}</p>
                   </div>
