@@ -70,7 +70,7 @@ export async function resetAllVotes() {
   await batch.commit()
 }
 
-export function tallyVotes(votes: Vote[], projectsMap: Map<string, { projectName: string; career: Career }>) {
+export function tallyVotes(votes: Vote[], _projectsMap: Map<string, { projectName: string; career: Career }>) {
   const careerTallies: Record<string, Record<string, number>> = {}
   const generalTally: Record<string, number> = {}
   const voters = new Set<string>()

@@ -13,33 +13,36 @@ interface WinnerInfo {
   sublabel: string
 }
 
-const DEMO_WINNERS: WinnerInfo[] = CAREERS.map((c, i) => ({
-  project: {
-    id: `demo-${i}`,
-    career: c.key,
-    projectName: ['Oneiro', 'Metamorfosis', 'Hilos del Tiempo', 'Casa Origen', 'Flujo Urbano', 'Ecos'][i],
-    teamName: ['Sofia Martinez', 'Diego Lopez', 'Ana Garza', 'Carlos Reyes', 'Mariana Torres', 'Luis Hernandez'][i],
-    description: '',
-    coverUrl: '',
-    createdAt: new Date(),
+const DEMO_WINNERS: WinnerInfo[] = [
+  ...CAREERS.map((c, i): WinnerInfo => ({
+    project: {
+      id: `demo-${i}`,
+      career: c.key,
+      projectName: ['Oneiro', 'Metamorfosis', 'Hilos del Tiempo', 'Casa Origen', 'Flujo Urbano', 'Ecos'][i],
+      teamName: ['Sofia Martinez', 'Diego Lopez', 'Ana Garza', 'Carlos Reyes', 'Mariana Torres', 'Luis Hernandez'][i],
+      description: '',
+      coverUrl: '',
+      createdAt: new Date(),
+    },
+    votes: [12, 9, 11, 8, 10, 7][i],
+    label: c.key,
+    sublabel: c.name,
+  })),
+  {
+    project: {
+      id: 'demo-general',
+      career: 'LDG',
+      projectName: 'Oneiro',
+      teamName: 'Sofia Martinez',
+      description: '',
+      coverUrl: '',
+      createdAt: new Date(),
+    },
+    votes: 15,
+    label: 'EAD',
+    sublabel: 'Mejor Proyecto General',
   },
-  votes: [12, 9, 11, 8, 10, 7][i],
-  label: c.key,
-  sublabel: c.name,
-})).concat({
-  project: {
-    id: 'demo-general',
-    career: 'LDG',
-    projectName: 'Oneiro',
-    teamName: 'Sofia Martinez',
-    description: '',
-    coverUrl: '',
-    createdAt: new Date(),
-  },
-  votes: 15,
-  label: 'EAD',
-  sublabel: 'Mejor Proyecto General',
-})
+]
 
 function Particles() {
   const particles = useMemo(() =>
