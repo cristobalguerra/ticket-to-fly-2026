@@ -12,7 +12,7 @@ function normalize(name: string) {
 
 export async function hasAlreadyVoted(voterName: string): Promise<boolean> {
   const snap = await getDocs(
-    query(col, where('voterName', '==', normalize(voterName)), where('voteType', '==', 'career')),
+    query(col, where('voterName', '==', normalize(voterName))),
   )
   return !snap.empty
 }

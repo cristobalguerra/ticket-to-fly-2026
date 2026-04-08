@@ -66,7 +66,7 @@ export async function getProjects(): Promise<Project[]> {
 
 export async function getProjectsByCareer(career: Career): Promise<Project[]> {
   const snap = await getDocs(
-    query(col, where('career', '==', career), orderBy('createdAt', 'asc')),
+    query(col, where('career', '==', career)),
   )
   return snap.docs.map((d) => ({
     id: d.id,
