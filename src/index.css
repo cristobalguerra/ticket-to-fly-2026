@@ -78,19 +78,19 @@ body {
 }
 
 .plane-svg {
-  transform: rotate(-15deg);
+  transform: rotate(-8deg);
   animation: planeWobble 3s ease-in-out infinite;
 }
 
 .plane-trail {
   position: absolute;
-  right: 44px;
-  top: 50%;
-  width: 120px;
-  height: 3px;
-  transform: translateY(-50%) rotate(-15deg);
+  right: 70px;
+  top: 42%;
+  width: 160px;
+  height: 2.5px;
+  transform: translateY(-50%) rotate(-8deg);
   transform-origin: right center;
-  background: linear-gradient(to left, rgba(255,255,255,0.5), rgba(255,255,255,0.2) 30%, transparent);
+  background: linear-gradient(to left, rgba(255,255,255,0.45), rgba(255,255,255,0.15) 40%, transparent);
   border-radius: 2px;
   animation: planeWobble 3s ease-in-out infinite;
 }
@@ -132,8 +132,8 @@ body {
 }
 
 @keyframes planeWobble {
-  0%, 100% { transform: rotate(-15deg) translateY(0); }
-  50% { transform: rotate(-12deg) translateY(-8px); }
+  0%, 100% { transform: rotate(-8deg) translateY(0); }
+  50% { transform: rotate(-5deg) translateY(-8px); }
 }
 
 .project-card {
