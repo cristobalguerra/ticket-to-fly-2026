@@ -78,7 +78,7 @@ body {
 }
 
 .plane-img {
-  width: 120px;
+  width: 240px;
   height: auto;
   mix-blend-mode: screen;
   animation: planeWobble 4s ease-in-out infinite;
