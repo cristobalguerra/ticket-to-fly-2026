@@ -1,5 +1,5 @@
 import {
-  collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where, serverTimestamp,
+  collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where, serverTimestamp, updateDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Project, Career } from '../types'
@@ -73,6 +73,18 @@ export async function getProjectsByCareer(career: Career): Promise<Project[]> {
     ...d.data(),
     createdAt: d.data().createdAt?.toDate?.() ?? new Date(),
   })) as Project[]
+}
+
+export async function updateProject(
+  id: string,
+  data: Partial<Pick<Project, 'career' | 'projectName' | 'teamName' | 'description'>>,
+  imageFile?: File,
+) {
+  const updates: Record<string, unknown> = { ...data }
+  if (imageFile) {
+    updates.coverUrl = await resizeImage(imageFile)
+  }
+  await updateDoc(doc(db, 'projects', id), updates)
 }
 
 export async function deleteProject(id: string) {
