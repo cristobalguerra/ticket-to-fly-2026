@@ -38,7 +38,7 @@ export default function Vote() {
       setCurrentCareerIdx(0)
       setStep(CAREERS[0].key)
     } catch (err) {
-      setError('Error de conexion. Intenta de nuevo.')
+      setError('Error de conexión. Intenta de nuevo.')
       console.error(err)
     } finally {
       setLoading(false)
@@ -102,8 +102,8 @@ export default function Vote() {
       <Layout showBack>
         <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
           <XCircle className="w-16 h-16 text-gray-300 mb-4" />
-          <h2 className="text-xl font-bold">La votacion no esta abierta</h2>
-          <p className="text-gray-500 mt-2">Espera a que el administrador abra la votacion.</p>
+          <h2 className="text-xl font-bold">La votación no está abierta</h2>
+          <p className="text-gray-500 mt-2">Espera a que el administrador abra la votación.</p>
         </div>
       </Layout>
     )
@@ -142,7 +142,7 @@ export default function Vote() {
       <Layout showBack>
         <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6">
           <div className="w-full max-w-sm">
-            <h1 className="text-2xl font-bold text-center mb-2">Votacion EAD</h1>
+            <h1 className="text-2xl font-bold text-center mb-2">Votación EAD</h1>
             <p className="text-gray-500 text-center text-sm mb-8">
               Ingresa tu nombre completo para comenzar
             </p>

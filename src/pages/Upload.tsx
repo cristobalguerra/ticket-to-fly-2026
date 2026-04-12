@@ -111,13 +111,13 @@ export default function Upload() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-1">Descripcion ({description.length}/280)</label>
+              <label className="block text-sm font-semibold mb-1">Descripción ({description.length}/280)</label>
               <textarea
                 maxLength={280}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none resize-none h-24"
-                placeholder="Breve descripcion del proyecto"
+                placeholder="Breve descripción del proyecto"
               />
             </div>
 

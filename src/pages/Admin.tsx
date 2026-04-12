@@ -33,8 +33,8 @@ export default function Admin() {
   }
 
   async function handleReset() {
-    if (!confirm('Borrar TODOS los votos? Esta accion no se puede deshacer.')) return
-    if (!confirm('Estas seguro? Se eliminaran todos los votos registrados.')) return
+    if (!confirm('Borrar TODOS los votos? Esta acción no se puede deshacer.')) return
+    if (!confirm('¿Estás seguro? Se eliminarán todos los votos registrados.')) return
     await resetAllVotes()
     await loadData()
   }
@@ -51,7 +51,7 @@ export default function Admin() {
   }
 
   return (
-    <PinGate label="Panel de Administracion">
+    <PinGate label="Panel de Administración">
       <Layout showBack>
         <div className="max-w-2xl mx-auto p-4 pb-8">
           <div className="flex items-center justify-between mt-4 mb-6">
@@ -72,7 +72,7 @@ export default function Admin() {
               }`}
             >
               {votingOpen ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-              Votacion {votingOpen ? 'Abierta' : 'Cerrada'}
+              Votación {votingOpen ? 'Abierta' : 'Cerrada'}
             </button>
 
             <Link

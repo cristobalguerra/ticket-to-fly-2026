@@ -21,9 +21,9 @@ export default function Home() {
           to Fly
         </h1>
         <p className="text-udem-black/80 text-sm md:text-base mt-6 max-w-xs mx-auto font-medium leading-relaxed">
-          Exposicion de Proyectos de Evaluacion Final
+          Exposición de Proyectos de Evaluación Final
           <br />
-          de la Escuela de Arte y Diseno
+          de la Escuela de Arte y Diseño
         </p>
       </div>
 
