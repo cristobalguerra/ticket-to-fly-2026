@@ -61,6 +61,81 @@ body {
   }
 }
 
+/* ── Flying paper plane ── */
+
+.flying-plane-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.flying-plane {
+  position: absolute;
+  animation: flyAcross 18s linear infinite;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
+}
+
+.plane-svg {
+  transform: rotate(-15deg);
+  animation: planeWobble 3s ease-in-out infinite;
+}
+
+.plane-trail {
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  width: 120px;
+  height: 3px;
+  transform: translateY(-50%) rotate(-15deg);
+  transform-origin: right center;
+  background: linear-gradient(to left, rgba(255,255,255,0.5), rgba(255,255,255,0.2) 30%, transparent);
+  border-radius: 2px;
+  animation: planeWobble 3s ease-in-out infinite;
+}
+
+@keyframes flyAcross {
+  0% {
+    left: -10%;
+    top: 60%;
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  25% {
+    left: 30%;
+    top: 35%;
+    transform: scale(0.85);
+  }
+  50% {
+    left: 55%;
+    top: 25%;
+    transform: scale(1);
+  }
+  75% {
+    left: 80%;
+    top: 40%;
+    transform: scale(0.9);
+  }
+  97% {
+    opacity: 1;
+  }
+  100% {
+    left: 110%;
+    top: 20%;
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes planeWobble {
+  0%, 100% { transform: rotate(-15deg) translateY(0); }
+  50% { transform: rotate(-12deg) translateY(-8px); }
+}
+
 .project-card {
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }

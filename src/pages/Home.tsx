@@ -1,13 +1,18 @@
 import { Link } from 'react-router-dom'
 import { Vote, Upload, Settings } from 'lucide-react'
+import FlyingPlane from '../components/FlyingPlane'
 
 export default function Home() {
   return (
     <div className="home-bg min-h-dvh flex flex-col items-center justify-center p-6 text-center relative">
-      {/* UDEM badge */}
-      <div className="absolute top-6 right-6 bg-udem-black text-white font-black text-lg px-4 py-2 tracking-wider z-10">
-        UDEM
-      </div>
+      <FlyingPlane />
+
+      {/* UDEM logo */}
+      <img
+        src={import.meta.env.BASE_URL + 'udem-logo.png'}
+        alt="UDEM"
+        className="absolute top-4 right-4 h-10 md:h-12 z-10"
+      />
 
       {/* Edition badge */}
       <div className="absolute top-6 left-6 border-2 border-udem-black text-udem-black font-black text-sm px-3 py-1 z-10">
