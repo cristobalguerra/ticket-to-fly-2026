@@ -68,72 +68,63 @@ body {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  z-index: 5;
+  z-index: 50;
 }
 
 .flying-plane {
   position: absolute;
-  animation: flyAcross 18s linear infinite;
+  animation: flyAcross 35s ease-in-out infinite;
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
 }
 
-.plane-svg {
-  transform: rotate(-8deg);
-  animation: planeWobble 3s ease-in-out infinite;
+.plane-img {
+  width: 120px;
+  height: auto;
+  mix-blend-mode: screen;
+  animation: planeWobble 4s ease-in-out infinite;
 }
 
 .plane-trail {
   position: absolute;
-  right: 70px;
-  top: 42%;
-  width: 160px;
-  height: 2.5px;
-  transform: translateY(-50%) rotate(-8deg);
+  right: 55px;
+  top: 55%;
+  width: 140px;
+  height: 2px;
+  transform: translateY(-50%);
   transform-origin: right center;
-  background: linear-gradient(to left, rgba(255,255,255,0.45), rgba(255,255,255,0.15) 40%, transparent);
+  background: linear-gradient(to left, rgba(255,255,255,0.4), rgba(255,255,255,0.1) 40%, transparent);
   border-radius: 2px;
   animation: planeWobble 3s ease-in-out infinite;
 }
 
 @keyframes flyAcross {
   0% {
-    left: -10%;
-    top: 60%;
-    transform: scale(0.7);
+    left: -15%;
+    top: 80%;
     opacity: 0;
   }
-  3% {
+  4% {
     opacity: 1;
   }
-  25% {
-    left: 30%;
-    top: 35%;
-    transform: scale(0.85);
-  }
   50% {
-    left: 55%;
-    top: 25%;
-    transform: scale(1);
+    left: 45%;
+    top: 45%;
   }
-  75% {
-    left: 80%;
-    top: 40%;
-    transform: scale(0.9);
-  }
-  97% {
+  96% {
     opacity: 1;
   }
   100% {
     left: 110%;
-    top: 20%;
-    transform: scale(0.8);
+    top: 10%;
     opacity: 0;
   }
 }
 
 @keyframes planeWobble {
-  0%, 100% { transform: rotate(-8deg) translateY(0); }
-  50% { transform: rotate(-5deg) translateY(-8px); }
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(-1deg); }
+  50% { transform: translateY(0px) rotate(0.5deg); }
+  75% { transform: translateY(-6px) rotate(-0.5deg); }
 }
 
 .project-card {
