@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { CAREERS, type Career, type Project } from '../types'
 import { addProject, getProjects, deleteProject, updateProject } from '../lib/projects'
+import { SLOTS, getSlotById } from '../lib/floor-plan'
 import Layout from '../components/Layout'
 import PinGate from '../components/PinGate'
-import { Trash2, ImagePlus, Loader2, Pencil, X } from 'lucide-react'
+import FloorMap from '../components/FloorMap'
+import { Trash2, ImagePlus, Loader2, Pencil, X, MapPin, AlertCircle } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
@@ -18,6 +20,7 @@ export default function Upload() {
   const [projects, setProjects] = useState<Project[]>([])
   const [msg, setMsg] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [slotId, setSlotId] = useState<string | null>(null)
 
   useEffect(() => { loadProjects() }, [])
 
@@ -25,6 +28,23 @@ export default function Upload() {
     const p = await getProjects()
     setProjects(p)
   }
+
+  // Slots already taken (excluding the project being edited)
+  const takenSlotIds = useMemo(() => {
+    const taken = new Set<string>()
+    projects.forEach((p) => {
+      if (p.slotId && p.id !== editingId) taken.add(p.slotId)
+    })
+    return taken
+  }, [projects, editingId])
+
+  // Available slot count for current career
+  const careerSlotsTotal = useMemo(() => SLOTS.filter((s) => s.career === career).length, [career])
+  const careerSlotsTaken = useMemo(
+    () => SLOTS.filter((s) => s.career === career && takenSlotIds.has(s.id)).length,
+    [career, takenSlotIds],
+  )
+  const careerFull = careerSlotsTotal > 0 && careerSlotsTaken >= careerSlotsTotal
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -37,6 +57,15 @@ export default function Upload() {
     setImagePreview(URL.createObjectURL(file))
   }
 
+  function handleCareerChange(c: Career) {
+    setCareer(c)
+    // Clear slot if it doesn't belong to the new career
+    if (slotId) {
+      const slot = getSlotById(slotId)
+      if (slot && slot.career !== c) setSlotId(null)
+    }
+  }
+
   function startEditing(p: Project) {
     setEditingId(p.id)
     setCareer(p.career)
@@ -45,6 +74,7 @@ export default function Upload() {
     setDescription(p.description)
     setImageFile(null)
     setImagePreview(p.coverUrl || null)
+    setSlotId(p.slotId ?? null)
     setMsg('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -57,6 +87,7 @@ export default function Upload() {
     setDescription('')
     setImageFile(null)
     setImagePreview(null)
+    setSlotId(null)
     setMsg('')
   }
 
@@ -74,16 +105,24 @@ export default function Upload() {
           projectName: projectName.trim(),
           teamName: teamName.trim(),
           description: description.trim(),
+          slotId: slotId ?? undefined,
         }, imageFile || undefined)
         setMsg('Proyecto actualizado')
         cancelEditing()
       } else {
-        await addProject({ career, projectName: projectName.trim(), teamName: teamName.trim(), description: description.trim() }, imageFile!)
+        await addProject({
+          career,
+          projectName: projectName.trim(),
+          teamName: teamName.trim(),
+          description: description.trim(),
+          slotId: slotId ?? undefined,
+        }, imageFile!)
         setProjectName('')
         setTeamName('')
         setDescription('')
         setImageFile(null)
         setImagePreview(null)
+        setSlotId(null)
         setMsg('Proyecto agregado')
       }
       await loadProjects()
@@ -108,7 +147,7 @@ export default function Upload() {
   return (
     <PinGate label="Subir Proyectos">
       <Layout showBack>
-        <div className="max-w-lg mx-auto p-4 pb-8">
+        <div className="max-w-2xl mx-auto p-4 pb-8">
           <div className="flex items-center justify-between mt-4 mb-6">
             <h1 className="text-2xl font-bold">
               {editingId ? 'Editar Proyecto' : 'Subir Proyecto'}
@@ -129,7 +168,7 @@ export default function Upload() {
               <label className="block text-sm font-semibold mb-1">Carrera</label>
               <select
                 value={career}
-                onChange={(e) => setCareer(e.target.value as Career)}
+                onChange={(e) => handleCareerChange(e.target.value as Career)}
                 className={inputBase}
                 style={inputStyle}
               >
@@ -199,6 +238,59 @@ export default function Upload() {
               </label>
             </div>
 
+            {/* ─── Floor plan slot selector ─── */}
+            <div className="stagger-in" data-i="5">
+              <div className="flex items-baseline justify-between mb-1">
+                <label className="block text-sm font-semibold">
+                  <MapPin className="inline w-4 h-4 mb-0.5 mr-1" />
+                  Lugar en el plano
+                </label>
+                <span className="text-xs text-gray-400 tabular-nums">
+                  {careerSlotsTaken}/{careerSlotsTotal} ocupados
+                </span>
+              </div>
+
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-3" style={inputStyle}>
+                {careerFull && !slotId ? (
+                  <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <AlertCircle className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-orange-800">Carrera llena</p>
+                      <p className="text-xs text-orange-700 mt-0.5">
+                        Todos los lugares para esta carrera están ocupados. Puedes registrar el proyecto sin lugar y el admin lo asignará después.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500 mb-3 text-center">
+                    {slotId
+                      ? <>Lugar seleccionado: <strong className="text-udem-black">{slotId}</strong></>
+                      : 'Toca un lugar disponible en el plano para asignarlo'}
+                  </p>
+                )}
+
+                <FloorMap
+                  projects={projects.filter((p) => p.id !== editingId)}
+                  selectedSlotId={slotId}
+                  filterCareer={career}
+                  takenSlotIds={takenSlotIds}
+                  onSlotClick={(s) => setSlotId(s.id === slotId ? null : s.id)}
+                  showLegend={false}
+                  showLabels={true}
+                />
+
+                {slotId && (
+                  <button
+                    type="button"
+                    onClick={() => setSlotId(null)}
+                    className="mt-2 text-xs text-gray-500 hover:text-udem-black flex items-center gap-1 mx-auto"
+                  >
+                    <X className="w-3 h-3" /> Quitar lugar
+                  </button>
+                )}
+              </div>
+            </div>
+
             <p
               aria-live="polite"
               className={`text-sm font-medium overflow-hidden ${
@@ -239,7 +331,14 @@ export default function Upload() {
                     <img src={p.coverUrl} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-udem-black">{p.career}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-udem-black">{p.career}</span>
+                      {p.slotId && (
+                        <span className="text-[10px] font-semibold text-udem-black/60 bg-gray-100 px-1.5 py-0.5 rounded tabular-nums flex items-center gap-0.5">
+                          <MapPin className="w-2.5 h-2.5" /> {p.slotId}
+                        </span>
+                      )}
+                    </div>
                     <p className="font-semibold text-sm truncate">{p.projectName}</p>
                     <p className="text-xs text-gray-400 truncate">{p.teamName}</p>
                   </div>

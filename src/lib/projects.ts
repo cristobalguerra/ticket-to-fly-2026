@@ -48,6 +48,7 @@ export async function addProject(
     projectName: data.projectName,
     teamName: data.teamName,
     description: data.description,
+    slotId: data.slotId ?? null,
     coverUrl,
     createdAt: serverTimestamp(),
   })
@@ -77,7 +78,7 @@ export async function getProjectsByCareer(career: Career): Promise<Project[]> {
 
 export async function updateProject(
   id: string,
-  data: Partial<Pick<Project, 'career' | 'projectName' | 'teamName' | 'description'>>,
+  data: Partial<Pick<Project, 'career' | 'projectName' | 'teamName' | 'description' | 'slotId'>>,
   imageFile?: File,
 ) {
   const updates: Record<string, unknown> = { ...data }

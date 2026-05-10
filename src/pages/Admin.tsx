@@ -5,8 +5,9 @@ import { getVotes, resetAllVotes, tallyVotes } from '../lib/votes'
 import { onVotingStatusChange, setVotingOpen } from '../lib/settings'
 import Layout from '../components/Layout'
 import PinGate from '../components/PinGate'
+import FloorMap from '../components/FloorMap'
 import { Link } from 'react-router-dom'
-import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight } from 'lucide-react'
+import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight, MapPin } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
@@ -93,6 +94,18 @@ export default function Admin() {
               <Presentation className="w-5 h-5" />
               Ceremony Mode
             </Link>
+          </div>
+
+          {/* Floor plan */}
+          <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <h3 className="font-bold text-sm flex items-center gap-2 mb-3">
+              <MapPin className="w-4 h-4" />
+              Plano del Evento
+              <span className="text-gray-400 text-xs ml-auto tabular-nums">
+                {projects.filter((p) => p.slotId).length}/{projects.length} con lugar
+              </span>
+            </h3>
+            <FloorMap projects={projects} showLegend={true} showLabels={true} />
           </div>
 
           {/* Stats */}

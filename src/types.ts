@@ -16,6 +16,7 @@ export interface Project {
   teamName: string
   description: string
   coverUrl: string
+  slotId?: string  // assigned floor plan slot (e.g., "LDG-3")
   createdAt: Date
 }
 
