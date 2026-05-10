@@ -6,6 +6,11 @@
   --color-ead-teal: #00646c;
   --color-ead-indigo: #363363;
   --font-family-display: 'Raleway', sans-serif;
+
+  /* Custom easing curves — stronger than CSS defaults */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html, body, #root {
@@ -17,9 +22,28 @@ body {
   background-color: #fafafa;
   color: var(--color-udem-black);
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* ── Home: Warm gradient (matching poster) ── */
+/* ── Press feedback (universal) ── */
+button, a[role="button"], .pressable {
+  transition: transform 160ms var(--ease-out-strong);
+}
+button:active:not(:disabled), a[role="button"]:active, .pressable:active {
+  transform: scale(0.97);
+}
+
+/* ── Focus rings (subtle, modern) ── */
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible {
+  outline: none;
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  border-color: var(--color-udem-black) !important;
+  box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.08);
+}
+
+/* ── Home: Spring gradient ── */
 
 .home-bg {
   background: linear-gradient(160deg, #BEF264 0%, #6EE7B7 25%, #34D399 50%, #2DD4BF 75%, #06B6D4 100%);
@@ -27,7 +51,6 @@ body {
   overflow: hidden;
 }
 
-/* Cloud/dreamy overlay at bottom */
 .home-bg::after {
   content: '';
   position: absolute;
@@ -40,7 +63,7 @@ body {
   pointer-events: none;
 }
 
-/* Outline text effect */
+/* ── Outline text ── */
 .text-outline {
   color: white;
   -webkit-text-stroke: 2px #333;
@@ -61,6 +84,42 @@ body {
   }
 }
 
+/* ── Stagger entrance for lists / hero ── */
+.stagger-in {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: staggerFade 500ms var(--ease-out-strong) forwards;
+}
+.stagger-in[data-i="0"] { animation-delay: 0ms; }
+.stagger-in[data-i="1"] { animation-delay: 50ms; }
+.stagger-in[data-i="2"] { animation-delay: 100ms; }
+.stagger-in[data-i="3"] { animation-delay: 150ms; }
+.stagger-in[data-i="4"] { animation-delay: 200ms; }
+.stagger-in[data-i="5"] { animation-delay: 250ms; }
+.stagger-in[data-i="6"] { animation-delay: 300ms; }
+.stagger-in[data-i="7"] { animation-delay: 350ms; }
+@keyframes staggerFade {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Page entrance ── */
+.page-enter {
+  animation: pageEnter 400ms var(--ease-out-strong) both;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Step transition (vote flow) ── */
+.step-enter {
+  animation: stepEnter 350ms var(--ease-out-strong) both;
+}
+@keyframes stepEnter {
+  from { opacity: 0; transform: translateX(12px); filter: blur(2px); }
+  to { opacity: 1; transform: translateX(0); filter: blur(0); }
+}
+
 /* ── Flying paper plane ── */
 
 .flying-plane-container {
@@ -75,13 +134,14 @@ body {
   position: absolute;
   animation: flyAcross 25s linear infinite;
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
+  will-change: transform;
 }
 
 .plane-img {
   width: 240px;
   height: auto;
   mix-blend-mode: screen;
-  animation: planeWobble 4s ease-in-out infinite;
+  animation: planeWobble 4s var(--ease-in-out-strong) infinite;
 }
 
 .plane-trail {
@@ -94,7 +154,7 @@ body {
   transform-origin: right center;
   background: linear-gradient(to left, rgba(255,255,255,0.4), rgba(255,255,255,0.1) 40%, transparent);
   border-radius: 2px;
-  animation: planeWobble 3s ease-in-out infinite;
+  animation: planeWobble 3s var(--ease-in-out-strong) infinite;
 }
 
 @keyframes flyAcross {
@@ -103,12 +163,8 @@ body {
     top: 85%;
     opacity: 0;
   }
-  3% {
-    opacity: 1;
-  }
-  97% {
-    opacity: 1;
-  }
+  3% { opacity: 1; }
+  97% { opacity: 1; }
   100% {
     left: 120%;
     top: 5%;
@@ -123,16 +179,30 @@ body {
   75% { transform: translateY(-6px) rotate(-0.5deg); }
 }
 
+/* ── Project card ── */
 .project-card {
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition:
+    transform 200ms var(--ease-out-strong),
+    box-shadow 200ms var(--ease-out-strong),
+    border-color 200ms var(--ease-out-strong);
+  will-change: transform;
 }
-.project-card:hover {
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+  }
+}
+.project-card:active:not(:disabled) {
+  transform: scale(0.985);
 }
 .project-card.selected {
   border-color: var(--color-udem-black);
-  box-shadow: 0 0 0 3px var(--color-udem-black), 0 4px 20px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 0 0 3px var(--color-udem-black), 0 8px 24px rgba(0,0,0,0.12);
+  transform: translateY(-3px);
+}
+.project-card.selected:active {
+  transform: scale(0.985) translateY(-3px);
 }
 
 /* ── Ceremony: Liquid Glass ── */
@@ -143,7 +213,6 @@ body {
   position: relative;
 }
 
-/* Animated gradient orbs */
 .ceremony-bg::before,
 .ceremony-bg::after {
   content: '';
@@ -151,7 +220,7 @@ body {
   border-radius: 50%;
   filter: blur(120px);
   opacity: 0.4;
-  animation: orbFloat 12s ease-in-out infinite alternate;
+  animation: orbFloat 12s var(--ease-in-out-strong) infinite alternate;
   pointer-events: none;
 }
 .ceremony-bg::before {
@@ -176,7 +245,6 @@ body {
   100% { transform: translate(-30px, 80px) scale(0.95); }
 }
 
-/* Third orb (yellow accent) */
 .ceremony-orb-accent {
   position: fixed;
   width: 400px;
@@ -187,15 +255,14 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: orbPulse 8s ease-in-out infinite alternate;
+  animation: orbPulse 8s var(--ease-in-out-strong) infinite alternate;
   pointer-events: none;
 }
 @keyframes orbPulse {
-  0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.8); }
-  100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.2); }
+  0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.85); }
+  100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.15); }
 }
 
-/* Glass card */
 .glass-card {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(40px) saturate(1.5);
@@ -208,7 +275,6 @@ body {
     inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* Glass pill badge */
 .glass-pill {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
@@ -218,19 +284,16 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Winner reveal animation */
 .ceremony-reveal {
-  animation: liquidReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: liquidReveal 900ms var(--ease-out-strong) both;
 }
 @keyframes liquidReveal {
   0% {
     opacity: 0;
-    transform: scale(0.85) translateY(40px);
-    filter: blur(10px);
+    transform: scale(0.92) translateY(24px);
+    filter: blur(8px);
   }
-  60% {
-    filter: blur(0px);
-  }
+  60% { filter: blur(0px); }
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -238,9 +301,8 @@ body {
   }
 }
 
-/* Title glow */
 .ceremony-title {
-  animation: liquidGlow 3s ease-in-out infinite alternate;
+  animation: liquidGlow 3s var(--ease-in-out-strong) infinite alternate;
 }
 @keyframes liquidGlow {
   0% {
@@ -256,7 +318,6 @@ body {
   }
 }
 
-/* Shimmer effect on glass card border */
 .glass-shimmer {
   position: relative;
   overflow: hidden;
@@ -284,16 +345,15 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Trophy icon pulse */
 .trophy-pulse {
-  animation: trophyPulse 2s ease-in-out infinite;
+  animation: trophyPulse 2.4s var(--ease-in-out-strong) infinite;
 }
 @keyframes trophyPulse {
   0%, 100% { transform: translate(-50%, 0) scale(1); }
-  50% { transform: translate(-50%, 0) scale(1.08); }
+  50% { transform: translate(-50%, 0) scale(1.06); }
 }
 
-/* Floating particles */
+/* Floating particles — never start from scale(0) */
 .ceremony-particles {
   position: fixed;
   inset: 0;
@@ -309,13 +369,12 @@ body {
   animation: particleFloat linear infinite;
 }
 @keyframes particleFloat {
-  0% { transform: translateY(100vh) scale(0); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
+  0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
   100% { transform: translateY(-10vh) scale(1); opacity: 0; }
 }
 
-/* Intro logo ring */
 .logo-ring {
   position: relative;
 }
@@ -345,12 +404,52 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Vote count counter animation */
 .vote-count {
   display: inline-block;
-  animation: countReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+  animation: countReveal 500ms var(--ease-out-strong) 350ms both;
 }
 @keyframes countReveal {
-  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  from { opacity: 0; transform: translateY(8px); filter: blur(3px); }
   to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* Nudging chevron — subtle indicator */
+.arrow-nudge {
+  animation: arrowNudge 1.6s var(--ease-in-out-strong) infinite;
+}
+@keyframes arrowNudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .flying-plane,
+  .plane-img,
+  .plane-trail,
+  .ceremony-bg::before,
+  .ceremony-bg::after,
+  .ceremony-orb-accent,
+  .glass-shimmer::before,
+  .ceremony-particles span,
+  .logo-ring::before,
+  .ceremony-title,
+  .trophy-pulse {
+    animation: none !important;
+  }
+  .ceremony-reveal,
+  .step-enter,
+  .page-enter,
+  .stagger-in,
+  .vote-count {
+    animation-duration: 200ms !important;
+    animation-name: fadeIn !important;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  *, *::before, *::after {
+    transition-duration: 100ms !important;
+  }
 }

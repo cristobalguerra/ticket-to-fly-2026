@@ -5,6 +5,8 @@ import Layout from '../components/Layout'
 import PinGate from '../components/PinGate'
 import { Trash2, ImagePlus, Loader2, Pencil, X } from 'lucide-react'
 
+const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
+
 export default function Upload() {
   const [career, setCareer] = useState<Career>('LDG')
   const [projectName, setProjectName] = useState('')
@@ -17,9 +19,7 @@ export default function Upload() {
   const [msg, setMsg] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadProjects()
-  }, [])
+  useEffect(() => { loadProjects() }, [])
 
   async function loadProjects() {
     const p = await getProjects()
@@ -96,36 +96,42 @@ export default function Upload() {
   }
 
   async function handleDelete(p: Project) {
-    if (!confirm(`Eliminar "${p.projectName}"?`)) return
+    if (!confirm(`¿Eliminar "${p.projectName}"?`)) return
     await deleteProject(p.id)
     if (editingId === p.id) cancelEditing()
     await loadProjects()
   }
 
+  const inputBase = 'w-full border-2 border-gray-200 rounded-xl p-3 outline-none bg-white'
+  const inputStyle = { transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }
+
   return (
     <PinGate label="Subir Proyectos">
       <Layout showBack>
         <div className="max-w-lg mx-auto p-4 pb-8">
-          <h1 className="text-2xl font-bold mt-4 mb-6">
-            {editingId ? 'Editar Proyecto' : 'Subir Proyecto'}
-          </h1>
-
-          {editingId && (
+          <div className="flex items-center justify-between mt-4 mb-6">
+            <h1 className="text-2xl font-bold">
+              {editingId ? 'Editar Proyecto' : 'Subir Proyecto'}
+            </h1>
             <button
               onClick={cancelEditing}
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-udem-black mb-4 transition-colors"
+              className={`flex items-center gap-1 text-sm text-gray-500 hover:text-udem-black overflow-hidden ${
+                editingId ? 'opacity-100 max-w-[140px]' : 'opacity-0 max-w-0 pointer-events-none'
+              }`}
+              style={{ transition: `opacity 200ms ${EASE_OUT}, max-width 280ms ${EASE_OUT}, color 180ms ${EASE_OUT}` }}
             >
-              <X className="w-4 h-4" /> Cancelar edición
+              <X className="w-4 h-4 shrink-0" /> Cancelar edición
             </button>
-          )}
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+            <div className="stagger-in" data-i="0">
               <label className="block text-sm font-semibold mb-1">Carrera</label>
               <select
                 value={career}
                 onChange={(e) => setCareer(e.target.value as Career)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none"
+                className={inputBase}
+                style={inputStyle}
               >
                 {CAREERS.map((c) => (
                   <option key={c.key} value={c.key}>{c.key} — {c.name}</option>
@@ -133,46 +139,54 @@ export default function Upload() {
               </select>
             </div>
 
-            <div>
+            <div className="stagger-in" data-i="1">
               <label className="block text-sm font-semibold mb-1">Nombre del Proyecto</label>
               <input
                 type="text"
                 maxLength={100}
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none"
+                className={inputBase}
+                style={inputStyle}
                 placeholder="Mi proyecto"
               />
             </div>
 
-            <div>
+            <div className="stagger-in" data-i="2">
               <label className="block text-sm font-semibold mb-1">Alumno / Equipo</label>
               <input
                 type="text"
                 maxLength={150}
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none"
+                className={inputBase}
+                style={inputStyle}
                 placeholder="Nombre del alumno o equipo"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-1">Descripción ({description.length}/280)</label>
+            <div className="stagger-in" data-i="3">
+              <label className="block text-sm font-semibold mb-1">
+                Descripción <span className="text-gray-400 font-normal tabular-nums">({description.length}/280)</span>
+              </label>
               <textarea
                 maxLength={280}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-udem-black/40 outline-none resize-none h-24"
+                className={`${inputBase} resize-none h-24`}
+                style={inputStyle}
                 placeholder="Breve descripción del proyecto"
               />
             </div>
 
-            <div>
+            <div className="stagger-in" data-i="4">
               <label className="block text-sm font-semibold mb-1">
-                Imagen de Cover {editingId && <span className="text-gray-400 font-normal">(opcional, deja vacío para mantener la actual)</span>}
+                Imagen de Cover {editingId && <span className="text-gray-400 font-normal">(opcional)</span>}
               </label>
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-udem-black/30 transition-colors">
+              <label
+                className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-udem-black/30 hover:bg-gray-50/50"
+                style={{ transition: `border-color 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
+              >
                 {imagePreview ? (
                   <img src={imagePreview} alt="Preview" className="max-h-48 rounded-lg object-contain" />
                 ) : (
@@ -185,33 +199,41 @@ export default function Upload() {
               </label>
             </div>
 
-            {msg && (
-              <p className={`text-sm font-medium ${msg.includes('Error') || msg.includes('debe') || msg.includes('Selecciona') || msg.includes('Ingresa') ? 'text-red-500' : 'text-green-600'}`}>
-                {msg}
-              </p>
-            )}
+            <p
+              aria-live="polite"
+              className={`text-sm font-medium overflow-hidden ${
+                msg ? 'max-h-6 opacity-100' : 'max-h-0 opacity-0'
+              } ${msg.includes('Error') || msg.includes('debe') || msg.includes('Selecciona') || msg.includes('Ingresa') ? 'text-red-500' : 'text-green-600'}`}
+              style={{ transition: `max-height 220ms ${EASE_OUT}, opacity 180ms ${EASE_OUT}` }}
+            >
+              {msg || ' '}
+            </p>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-udem-black text-white font-bold py-3 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-udem-black text-white font-bold py-3 rounded-xl shadow-lg disabled:opacity-40 flex items-center justify-center gap-2"
+              style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
               {loading ? 'Guardando...' : editingId ? 'Guardar Cambios' : 'Agregar Proyecto'}
             </button>
           </form>
 
-          {/* Existing projects */}
           <div className="mt-10">
-            <h2 className="text-lg font-bold mb-4">Proyectos Cargados ({projects.length})</h2>
+            <h2 className="text-lg font-bold mb-4">
+              Proyectos Cargados <span className="text-gray-400 tabular-nums">({projects.length})</span>
+            </h2>
             {projects.length === 0 && <p className="text-gray-400 text-sm">No hay proyectos aún.</p>}
             <div className="space-y-3">
-              {projects.map((p) => (
+              {projects.map((p, i) => (
                 <div
                   key={p.id}
-                  className={`flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border transition-colors ${
+                  className={`stagger-in flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border ${
                     editingId === p.id ? 'border-udem-black' : 'border-gray-100'
                   }`}
+                  style={{ transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }}
+                  data-i={Math.min(i, 7)}
                 >
                   {p.coverUrl && (
                     <img src={p.coverUrl} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
@@ -223,13 +245,17 @@ export default function Upload() {
                   </div>
                   <button
                     onClick={() => startEditing(p)}
-                    className="p-2 text-gray-300 hover:text-udem-black transition-colors shrink-0"
+                    aria-label="Editar"
+                    className="p-2 text-gray-300 hover:text-udem-black shrink-0"
+                    style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(p)}
-                    className="p-2 text-gray-300 hover:text-red-500 transition-colors shrink-0"
+                    aria-label="Eliminar"
+                    className="p-2 text-gray-300 hover:text-red-500 shrink-0"
+                    style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

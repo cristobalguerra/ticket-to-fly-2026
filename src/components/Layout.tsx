@@ -8,9 +8,13 @@ interface Props {
 export default function Layout({ children, showBack }: Props) {
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="bg-udem-black text-white px-4 py-3 flex items-center gap-3">
+      <header className="bg-udem-black text-white px-4 py-3 flex items-center gap-3 sticky top-0 z-30">
         {showBack && (
-          <Link to="/" className="text-white/70 font-bold text-sm hover:text-white transition-colors">
+          <Link
+            to="/"
+            className="text-white/70 font-bold text-sm hover:text-white"
+            style={{ transition: 'color 180ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+          >
             &larr; Inicio
           </Link>
         )}
@@ -19,7 +23,7 @@ export default function Layout({ children, showBack }: Props) {
           <span className="text-white/40 text-xs font-light tracking-widest">2026</span>
         </div>
       </header>
-      <main className="flex-1 bg-gradient-to-b from-[#f0fdf4] to-[#ecfeff]">{children}</main>
+      <main className="flex-1 bg-gradient-to-b from-[#f0fdf4] to-[#ecfeff] page-enter">{children}</main>
     </div>
   )
 }

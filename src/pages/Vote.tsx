@@ -9,6 +9,8 @@ import { Loader2, CheckCircle2, XCircle, ChevronRight, Send } from 'lucide-react
 
 type Step = 'name' | Career | 'general' | 'confirm' | 'done' | 'closed' | 'already'
 
+const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
+
 export default function Vote() {
   const [step, setStep] = useState<Step>('name')
   const [voterName, setVoterName] = useState('')
@@ -19,7 +21,6 @@ export default function Vote() {
   const [error, setError] = useState('')
   const [currentCareerIdx, setCurrentCareerIdx] = useState(0)
 
-  // Check voting status on mount
   useEffect(() => {
     isVotingOpen().then((open) => {
       if (!open) setStep('closed')
@@ -33,7 +34,6 @@ export default function Vote() {
     try {
       const voted = await hasAlreadyVoted(voterName)
       if (voted) { setStep('already'); return }
-      // Load first career projects
       await loadCareerProjects(CAREERS[0].key)
       setCurrentCareerIdx(0)
       setStep(CAREERS[0].key)
@@ -84,7 +84,6 @@ export default function Vote() {
     }
   }
 
-  // Get the 6 selected projects for the general vote
   function getSelectedProjects(): Project[] {
     const selected: Project[] = []
     for (const career of CAREERS) {
@@ -100,7 +99,7 @@ export default function Vote() {
   if (step === 'closed') {
     return (
       <Layout showBack>
-        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
+        <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
           <XCircle className="w-16 h-16 text-gray-300 mb-4" />
           <h2 className="text-xl font-bold">La votación no está abierta</h2>
           <p className="text-gray-500 mt-2">Espera a que el administrador abra la votación.</p>
@@ -112,7 +111,7 @@ export default function Vote() {
   if (step === 'already') {
     return (
       <Layout showBack>
-        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
+        <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
           <CheckCircle2 className="w-16 h-16 text-ead-teal mb-4" />
           <h2 className="text-xl font-bold">Ya has votado</h2>
           <p className="text-gray-500 mt-2">
@@ -126,11 +125,11 @@ export default function Vote() {
   if (step === 'done') {
     return (
       <Layout showBack>
-        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
-          <div className="w-20 h-20 bg-udem-yellow rounded-full flex items-center justify-center mb-4">
+        <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
+          <div className="w-20 h-20 bg-udem-yellow rounded-full flex items-center justify-center mb-4 shadow-lg shadow-yellow-500/20">
             <CheckCircle2 className="w-10 h-10 text-udem-black" />
           </div>
-          <h2 className="text-2xl font-bold">Gracias, {voterName.split(' ')[0]}!</h2>
+          <h2 className="text-2xl font-bold">¡Gracias, {voterName.split(' ')[0]}!</h2>
           <p className="text-gray-500 mt-2">Tu voto ha sido registrado.</p>
         </div>
       </Layout>
@@ -140,7 +139,7 @@ export default function Vote() {
   if (step === 'name') {
     return (
       <Layout showBack>
-        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6">
+        <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6">
           <div className="w-full max-w-sm">
             <h1 className="text-2xl font-bold text-center mb-2">Votación EAD</h1>
             <p className="text-gray-500 text-center text-sm mb-8">
@@ -152,14 +151,22 @@ export default function Vote() {
               onChange={(e) => { setVoterName(e.target.value); setError('') }}
               onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
               placeholder="Nombre Completo"
-              className="w-full border-2 border-gray-200 rounded-xl p-4 text-center text-lg focus:border-udem-black/40 outline-none"
+              className="w-full border-2 border-gray-200 rounded-xl p-4 text-center text-lg outline-none"
+              style={{ transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }}
               autoFocus
             />
-            {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
+            <p
+              aria-live="polite"
+              className={`text-red-500 text-sm text-center overflow-hidden ${error ? 'mt-2 max-h-6 opacity-100' : 'mt-0 max-h-0 opacity-0'}`}
+              style={{ transition: `max-height 220ms ${EASE_OUT}, opacity 180ms ${EASE_OUT}, margin-top 220ms ${EASE_OUT}` }}
+            >
+              {error || ' '}
+            </p>
             <button
               onClick={handleNameSubmit}
               disabled={loading}
-              className="mt-4 w-full bg-udem-black text-white font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-4 w-full bg-udem-black text-white font-bold py-4 rounded-xl shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Comenzar'}
             </button>
@@ -173,7 +180,7 @@ export default function Vote() {
     const selectedProjects = getSelectedProjects()
     return (
       <Layout showBack>
-        <div className="max-w-lg mx-auto p-4 pb-32">
+        <div className="step-enter max-w-lg mx-auto p-4 pb-32">
           <div className="text-center mb-6 mt-4">
             <span className="text-xs font-bold bg-udem-black text-white px-3 py-1 rounded-full">
               VOTO FINAL
@@ -185,25 +192,33 @@ export default function Vote() {
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            {selectedProjects.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                selected={generalVote === p.id}
-                onClick={() => { setGeneralVote(p.id); setError('') }}
-                showCareer
-              />
+            {selectedProjects.map((p, i) => (
+              <div key={p.id} className="stagger-in" data-i={Math.min(i, 7)}>
+                <ProjectCard
+                  project={p}
+                  selected={generalVote === p.id}
+                  onClick={() => { setGeneralVote(p.id); setError('') }}
+                  showCareer
+                />
+              </div>
             ))}
           </div>
 
-          {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
+          <p
+            aria-live="polite"
+            className={`text-red-500 text-sm text-center overflow-hidden ${error ? 'mt-4 max-h-6 opacity-100' : 'mt-0 max-h-0 opacity-0'}`}
+            style={{ transition: `max-height 220ms ${EASE_OUT}, opacity 180ms ${EASE_OUT}, margin-top 220ms ${EASE_OUT}` }}
+          >
+            {error || ' '}
+          </p>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200/60 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
           <button
             onClick={handleSubmitVotes}
             disabled={loading || !generalVote}
-            className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl shadow-lg disabled:opacity-40 flex items-center justify-center gap-2"
+            style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5" /> Enviar Votos</>}
           </button>
@@ -218,17 +233,25 @@ export default function Vote() {
 
   return (
     <Layout showBack>
-      <div className="max-w-lg mx-auto p-4 pb-32">
+      <div key={currentCareer.key} className="step-enter max-w-lg mx-auto p-4 pb-32">
         <div className="text-center mb-6 mt-4">
           <div className="flex items-center justify-center gap-2 mb-3">
-            {CAREERS.map((c, i) => (
-              <div
-                key={c.key}
-                className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                  i < currentCareerIdx ? 'bg-udem-black' : i === currentCareerIdx ? 'bg-udem-black' : 'bg-udem-black/20'
-                }`}
-              />
-            ))}
+            {CAREERS.map((c, i) => {
+              const done = i < currentCareerIdx
+              const active = i === currentCareerIdx
+              return (
+                <div
+                  key={c.key}
+                  className="rounded-full"
+                  style={{
+                    width: active ? '20px' : '8px',
+                    height: '8px',
+                    background: done || active ? '#333' : 'rgba(51,51,51,0.18)',
+                    transition: `width 280ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}`,
+                  }}
+                />
+              )
+            })}
           </div>
           <span className="text-xs font-bold bg-udem-black text-white px-3 py-1 rounded-full">
             {currentCareer.key} — {currentCareerIdx + 1}/6
@@ -244,25 +267,33 @@ export default function Vote() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {projects.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                selected={careerVotes[currentCareer.key] === p.id}
-                onClick={() => { setCareerVotes((prev) => ({ ...prev, [currentCareer.key]: p.id })); setError('') }}
-              />
+            {projects.map((p, i) => (
+              <div key={p.id} className="stagger-in" data-i={Math.min(i, 7)}>
+                <ProjectCard
+                  project={p}
+                  selected={careerVotes[currentCareer.key] === p.id}
+                  onClick={() => { setCareerVotes((prev) => ({ ...prev, [currentCareer.key]: p.id })); setError('') }}
+                />
+              </div>
             ))}
           </div>
         )}
 
-        {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
+        <p
+          aria-live="polite"
+          className={`text-red-500 text-sm text-center overflow-hidden ${error ? 'mt-4 max-h-6 opacity-100' : 'mt-0 max-h-0 opacity-0'}`}
+          style={{ transition: `max-height 220ms ${EASE_OUT}, opacity 180ms ${EASE_OUT}, margin-top 220ms ${EASE_OUT}` }}
+        >
+          {error || ' '}
+        </p>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200/60 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
         <button
           onClick={handleNextCareer}
           disabled={loading || !careerVotes[currentCareer.key]}
-          className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl shadow-lg disabled:opacity-40 flex items-center justify-center gap-2"
+          style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
             <>

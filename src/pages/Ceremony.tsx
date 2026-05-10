@@ -214,7 +214,7 @@ export default function Ceremony() {
             </h1>
             <p className="text-xl text-white/30 mt-4 font-light tracking-[0.3em] uppercase">2026</p>
             <p className="text-white/20 mt-16 text-xs flex items-center gap-2 justify-center tracking-wider">
-              Toca para comenzar <ChevronRight className="w-3 h-3" />
+              Toca para comenzar <ChevronRight className="w-3 h-3 arrow-nudge" />
             </p>
           </div>
         ) : current ? (
@@ -271,7 +271,7 @@ export default function Ceremony() {
 
             {!isDone && (
               <p className="text-white/10 mt-16 text-xs flex items-center gap-1 justify-center tracking-widest uppercase">
-                Siguiente <ChevronRight className="w-3 h-3" />
+                Siguiente <ChevronRight className="w-3 h-3 arrow-nudge" />
               </p>
             )}
 
