@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { GRID, SLOTS, TABLES, SECTION_LABELS, CAREER_COLORS, type Slot, type SlotCareer } from '../lib/floor-plan'
+import { useState, useEffect } from 'react'
+import { GRID, SLOTS as DEFAULT_SLOTS, TABLES as DEFAULT_TABLES, SECTION_LABELS as DEFAULT_LABELS, CAREER_COLORS, type Slot, type SlotCareer } from '../lib/floor-plan'
+import { onFloorPlanChange, buildDefaultFloorPlan, type FloorPlanData } from '../lib/floor-plan-storage'
 import type { Project } from '../types'
 
 interface Props {
@@ -13,7 +14,17 @@ interface Props {
   highlightOwnSlot?: string
 }
 
-const CELL = 18 // pixels per grid cell
+const CELL = 18
+
+const DEFAULT_PLAN: FloorPlanData = buildDefaultFloorPlan(
+  DEFAULT_TABLES,
+  DEFAULT_SLOTS,
+  DEFAULT_LABELS.filter((l) => l.row === 0),
+  DEFAULT_LABELS.filter((l) => l.row === 26),
+  GRID.stage,
+  GRID.stairsTop,
+  GRID.stairsMain,
+)
 
 export default function FloorMap({
   projects = [],
@@ -26,13 +37,37 @@ export default function FloorMap({
   highlightOwnSlot,
 }: Props) {
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null)
+  const [plan, setPlan] = useState<FloorPlanData>(DEFAULT_PLAN)
 
-  const width = GRID.cols * CELL
-  const height = GRID.rows * CELL
+  useEffect(() => {
+    const unsub = onFloorPlanChange((data) => {
+      if (data) setPlan(data)
+    })
+    return unsub
+  }, [])
+
+  // Determine grid dimensions from plan content
+  const maxCol = Math.max(
+    ...plan.tables.map((t) => t.col + t.width),
+    ...plan.slots.map((s) => s.col + 1),
+    ...plan.stageCells.map((c) => c.col + 1),
+    ...plan.stairsCells.map((c) => c.col + 1),
+    GRID.cols,
+  )
+  const maxRow = Math.max(
+    ...plan.tables.map((t) => t.row + 1),
+    ...plan.slots.map((s) => s.row + 1),
+    ...plan.stageCells.map((c) => c.row + 1),
+    ...plan.stairsCells.map((c) => c.row + 1),
+    GRID.rows,
+  )
+
+  const width = maxCol * CELL
+  const height = maxRow * CELL
   const projectsBySlotId = new Map<string, Project>()
   projects.forEach((p) => { if (p.slotId) projectsBySlotId.set(p.slotId, p) })
 
-  const careersUsed = Array.from(new Set(SLOTS.map((s) => s.career))) as SlotCareer[]
+  const careersUsed = Array.from(new Set(plan.slots.map((s) => s.career))) as SlotCareer[]
 
   return (
     <div className="w-full">
@@ -43,10 +78,9 @@ export default function FloorMap({
           style={{ minWidth: '720px' }}
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Outside the building (light grid background) */}
+          {/* Outside / building background */}
           <rect x={0} y={0} width={width} height={height} fill="#F3F4F6" />
 
-          {/* Subtle grid lines outside building (for context) */}
           <defs>
             <pattern id="grid" width={CELL} height={CELL} patternUnits="userSpaceOnUse">
               <rect width={CELL} height={CELL} fill="none" stroke="#E5E7EB" strokeWidth={0.5} />
@@ -54,72 +88,77 @@ export default function FloorMap({
           </defs>
           <rect x={0} y={0} width={width} height={height} fill="url(#grid)" />
 
-          {/* Building interior background */}
-          <rect
-            x={GRID.building.col * CELL}
-            y={GRID.building.row * CELL}
-            width={GRID.building.width * CELL}
-            height={GRID.building.height * CELL}
-            fill="#E5E7EB"
-          />
+          {/* Building heavy black border lines top/bottom */}
+          {plan.buildingTopRow != null && (
+            <line
+              x1={0}
+              y1={plan.buildingTopRow * CELL}
+              x2={width}
+              y2={plan.buildingTopRow * CELL}
+              stroke="#111"
+              strokeWidth={3}
+            />
+          )}
+          {plan.buildingBottomRow != null && (
+            <line
+              x1={0}
+              y1={plan.buildingBottomRow * CELL}
+              x2={width}
+              y2={plan.buildingBottomRow * CELL}
+              stroke="#111"
+              strokeWidth={3}
+            />
+          )}
 
-          {/* Building outer border (heavy black lines top + bottom) */}
-          <line
-            x1={GRID.building.col * CELL}
-            y1={GRID.building.row * CELL}
-            x2={(GRID.building.col + GRID.building.width) * CELL}
-            y2={GRID.building.row * CELL}
-            stroke="#111"
-            strokeWidth={3}
-          />
-          <line
-            x1={GRID.building.col * CELL}
-            y1={(GRID.building.row + GRID.building.height) * CELL}
-            x2={(GRID.building.col + GRID.building.width) * CELL}
-            y2={(GRID.building.row + GRID.building.height) * CELL}
-            stroke="#111"
-            strokeWidth={3}
-          />
+          {/* Stage cells (light gray) */}
+          {plan.stageCells.map((c, i) => (
+            <rect
+              key={`stage-${i}`}
+              x={c.col * CELL}
+              y={c.row * CELL}
+              width={CELL}
+              height={CELL}
+              fill="#FFFFFF"
+              stroke="#9CA3AF"
+              strokeWidth={0.3}
+            />
+          ))}
 
-          {/* Stage outer (heavy black border around white + gray stairs) */}
-          <rect
-            x={GRID.stage.col * CELL}
-            y={GRID.stage.row * CELL}
-            width={GRID.stage.width * CELL}
-            height={GRID.stage.height * CELL}
-            fill="#FFFFFF"
-            stroke="#111"
-            strokeWidth={2.5}
-          />
+          {/* Stairs cells (dark gray) */}
+          {plan.stairsCells.map((c, i) => (
+            <rect
+              key={`stairs-${i}`}
+              x={c.col * CELL}
+              y={c.row * CELL}
+              width={CELL}
+              height={CELL}
+              fill="#9CA3AF"
+              stroke="#6B7280"
+              strokeWidth={0.3}
+            />
+          ))}
 
-          {/* L-shaped stairs (gray) inside stage — narrower top, wider main */}
-          <rect
-            x={GRID.stairsTop.col * CELL}
-            y={GRID.stairsTop.row * CELL}
-            width={GRID.stairsTop.width * CELL}
-            height={GRID.stairsTop.height * CELL}
-            fill="#9CA3AF"
-          />
-          <rect
-            x={GRID.stairsMain.col * CELL}
-            y={GRID.stairsMain.row * CELL}
-            width={GRID.stairsMain.width * CELL}
-            height={GRID.stairsMain.height * CELL}
-            fill="#9CA3AF"
-          />
-          {/* Stage outer border on top of fills (so border shows over fills) */}
-          <rect
-            x={GRID.stage.col * CELL}
-            y={GRID.stage.row * CELL}
-            width={GRID.stage.width * CELL}
-            height={GRID.stage.height * CELL}
-            fill="none"
-            stroke="#111"
-            strokeWidth={2.5}
-          />
+          {/* Stage outline (heavy black border around stage area) */}
+          {plan.stageCells.length > 0 && (() => {
+            const cols = plan.stageCells.map((c) => c.col)
+            const rows = plan.stageCells.map((c) => c.row)
+            const minC = Math.min(...cols), maxC = Math.max(...cols)
+            const minR = Math.min(...rows), maxR = Math.max(...rows)
+            return (
+              <rect
+                x={minC * CELL}
+                y={minR * CELL}
+                width={(maxC - minC + 1) * CELL}
+                height={(maxR - minR + 1) * CELL}
+                fill="none"
+                stroke="#111"
+                strokeWidth={2.5}
+              />
+            )
+          })()}
 
-          {/* Tables (white cells with gray dividers — empty cells included for spatial context) */}
-          {TABLES.map((t, i) => (
+          {/* Tables (empty cells visible for spatial context) */}
+          {plan.tables.map((t, i) => (
             <g key={`table-${i}`}>
               <rect
                 x={t.col * CELL}
@@ -145,7 +184,7 @@ export default function FloorMap({
           ))}
 
           {/* Slots (colored cells) */}
-          {SLOTS.map((slot) => {
+          {plan.slots.map((slot) => {
             const project = projectsBySlotId.get(slot.id)
             const taken = takenSlotIds?.has(slot.id) ?? !!project
             const isFiltered = filterCareer && slot.career !== filterCareer
@@ -154,7 +193,6 @@ export default function FloorMap({
             const isOwnHighlight = highlightOwnSlot === slot.id
             const colors = CAREER_COLORS[slot.career]
 
-            const baseFill = colors.fill
             const opacity = isFiltered ? 0.4 : 1
             const isInteractive = onSlotClick && !taken && !isFiltered
 
@@ -171,13 +209,11 @@ export default function FloorMap({
                   y={slot.row * CELL + 0.5}
                   width={CELL - 1}
                   height={CELL - 1}
-                  fill={isSelected ? colors.stroke : taken ? colors.fill : baseFill}
+                  fill={isSelected ? colors.stroke : colors.fill}
                   stroke={isSelected || isOwnHighlight ? '#111' : colors.stroke}
                   strokeWidth={isSelected || isOwnHighlight ? 2 : 0.7}
                   opacity={opacity}
-                  style={{
-                    transition: 'fill 200ms cubic-bezier(0.23, 1, 0.32, 1), stroke-width 160ms cubic-bezier(0.23, 1, 0.32, 1)',
-                  }}
+                  style={{ transition: 'fill 200ms cubic-bezier(0.23, 1, 0.32, 1), stroke-width 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
                 />
                 {isInteractive && isHovered && (
                   <rect
@@ -206,10 +242,10 @@ export default function FloorMap({
             )
           })}
 
-          {/* Section labels (numbers above/below building) */}
-          {showLabels && SECTION_LABELS.map((s) => (
+          {/* Section labels */}
+          {showLabels && [...plan.topLabels, ...plan.bottomLabels].map((s, i) => (
             <text
-              key={`section-${s.num}-${s.row}`}
+              key={`label-${i}`}
               x={s.col * CELL}
               y={s.row * CELL + CELL * 0.85}
               textAnchor="middle"
@@ -224,10 +260,10 @@ export default function FloorMap({
         </svg>
       </div>
 
-      {/* Tooltip-style info for hovered/selected slot */}
+      {/* Hovered/selected info */}
       {(hoveredSlot || selectedSlotId) && (() => {
         const slotId = hoveredSlot || selectedSlotId
-        const slot = SLOTS.find((s) => s.id === slotId)
+        const slot = plan.slots.find((s) => s.id === slotId)
         if (!slot) return null
         const project = projectsBySlotId.get(slot.id)
         const colors = CAREER_COLORS[slot.career]
@@ -254,8 +290,8 @@ export default function FloorMap({
       {showLegend && (
         <div className="mt-4 flex flex-wrap gap-2 justify-center">
           {careersUsed.map((c) => {
-            const count = SLOTS.filter((s) => s.career === c).length
-            const taken = projects.filter((p) => p.slotId && SLOTS.find((s) => s.id === p.slotId)?.career === c).length
+            const count = plan.slots.filter((s) => s.career === c).length
+            const taken = projects.filter((p) => p.slotId && plan.slots.find((s) => s.id === p.slotId)?.career === c).length
             const colors = CAREER_COLORS[c]
             return (
               <div
