@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GRID, SLOTS, TABLES, CAREER_COLORS, type Slot, type SlotCareer } from '../lib/floor-plan'
+import { GRID, SLOTS, TABLES, SECTION_LABELS, CAREER_COLORS, type Slot, type SlotCareer } from '../lib/floor-plan'
 import type { Project } from '../types'
 
 interface Props {
@@ -32,19 +32,6 @@ export default function FloorMap({
   const projectsBySlotId = new Map<string, Project>()
   projects.forEach((p) => { if (p.slotId) projectsBySlotId.set(p.slotId, p) })
 
-  const sectionLabels = [
-    { num: 7,  col: 32.5, row: 0.5 },
-    { num: 9,  col: 25.5, row: 0.5 },
-    { num: 11, col: 18.5, row: 0.5 },
-    { num: 13, col: 11.5, row: 0.5 },
-    { num: 15, col: 4.5,  row: 0.5 },
-    { num: 18, col: 4.5,  row: 20.5 },
-    { num: 16, col: 11.5, row: 20.5 },
-    { num: 14, col: 18.5, row: 20.5 },
-    { num: 12, col: 25.5, row: 20.5 },
-    { num: 10, col: 32.5, row: 20.5 },
-  ]
-
   const careersUsed = Array.from(new Set(SLOTS.map((s) => s.career))) as SlotCareer[]
 
   return (
@@ -52,25 +39,72 @@ export default function FloorMap({
       <div className="overflow-x-auto -mx-4 px-4 pb-2">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full max-w-[800px] mx-auto block"
-          style={{ minWidth: '600px' }}
+          className="w-full max-w-[900px] mx-auto block"
+          style={{ minWidth: '720px' }}
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Grid background */}
+          {/* Outside the building (light grid background) */}
           <rect x={0} y={0} width={width} height={height} fill="#F3F4F6" />
 
-          {/* Building outline (heavy black border) */}
+          {/* Subtle grid lines outside building (for context) */}
+          <defs>
+            <pattern id="grid" width={CELL} height={CELL} patternUnits="userSpaceOnUse">
+              <rect width={CELL} height={CELL} fill="none" stroke="#E5E7EB" strokeWidth={0.5} />
+            </pattern>
+          </defs>
+          <rect x={0} y={0} width={width} height={height} fill="url(#grid)" />
+
+          {/* Building interior background */}
           <rect
-            x={CELL * 0.5}
-            y={CELL * 1}
-            width={width - CELL * 1}
-            height={height - CELL * 2}
+            x={GRID.building.col * CELL}
+            y={GRID.building.row * CELL}
+            width={GRID.building.width * CELL}
+            height={GRID.building.height * CELL}
             fill="#E5E7EB"
+          />
+
+          {/* Building outer border (heavy black lines top + bottom) */}
+          <line
+            x1={GRID.building.col * CELL}
+            y1={GRID.building.row * CELL}
+            x2={(GRID.building.col + GRID.building.width) * CELL}
+            y2={GRID.building.row * CELL}
+            stroke="#111"
+            strokeWidth={3}
+          />
+          <line
+            x1={GRID.building.col * CELL}
+            y1={(GRID.building.row + GRID.building.height) * CELL}
+            x2={(GRID.building.col + GRID.building.width) * CELL}
+            y2={(GRID.building.row + GRID.building.height) * CELL}
             stroke="#111"
             strokeWidth={3}
           />
 
-          {/* Stage area (white interior) */}
+          {/* Stair top notch (small gray protrusion above stage) */}
+          <rect
+            x={GRID.stairsTop.col * CELL}
+            y={GRID.stairsTop.row * CELL}
+            width={GRID.stairsTop.width * CELL}
+            height={GRID.stairsTop.height * CELL}
+            fill="#9CA3AF"
+            stroke="#111"
+            strokeWidth={1.5}
+          />
+          {/* Inner divider lines for stair notch */}
+          {Array.from({ length: GRID.stairsTop.width - 1 }).map((_, i) => (
+            <line
+              key={`stair-top-divider-${i}`}
+              x1={(GRID.stairsTop.col + i + 1) * CELL}
+              y1={GRID.stairsTop.row * CELL}
+              x2={(GRID.stairsTop.col + i + 1) * CELL}
+              y2={(GRID.stairsTop.row + GRID.stairsTop.height) * CELL}
+              stroke="#6B7280"
+              strokeWidth={0.5}
+            />
+          ))}
+
+          {/* Stage outer (heavy black border around white + gray stairs) */}
           <rect
             x={GRID.stage.col * CELL}
             y={GRID.stage.row * CELL}
@@ -81,18 +115,26 @@ export default function FloorMap({
             strokeWidth={2.5}
           />
 
-          {/* Stairs (dark gray block on right of stage) */}
+          {/* Stairs (gray block on right portion of stage) */}
           <rect
             x={GRID.stairs.col * CELL}
             y={GRID.stairs.row * CELL}
             width={GRID.stairs.width * CELL}
             height={GRID.stairs.height * CELL}
             fill="#9CA3AF"
-            stroke="#6B7280"
-            strokeWidth={1}
+          />
+          {/* Stage outer border on top of fills (so border shows over fills) */}
+          <rect
+            x={GRID.stage.col * CELL}
+            y={GRID.stage.row * CELL}
+            width={GRID.stage.width * CELL}
+            height={GRID.stage.height * CELL}
+            fill="none"
+            stroke="#111"
+            strokeWidth={2.5}
           />
 
-          {/* Tables (empty cells) */}
+          {/* Tables (white cells with gray dividers — empty cells included for spatial context) */}
           {TABLES.map((t, i) => (
             <g key={`table-${i}`}>
               <rect
@@ -102,9 +144,8 @@ export default function FloorMap({
                 height={CELL}
                 fill="white"
                 stroke="#9CA3AF"
-                strokeWidth={0.5}
+                strokeWidth={0.7}
               />
-              {/* Cell dividers */}
               {Array.from({ length: t.width - 1 }).map((_, j) => (
                 <line
                   key={j}
@@ -112,14 +153,14 @@ export default function FloorMap({
                   y1={t.row * CELL}
                   x2={(t.col + j + 1) * CELL}
                   y2={(t.row + 1) * CELL}
-                  stroke="#D1D5DB"
+                  stroke="#9CA3AF"
                   strokeWidth={0.5}
                 />
               ))}
             </g>
           ))}
 
-          {/* Slots */}
+          {/* Slots (colored cells) */}
           {SLOTS.map((slot) => {
             const project = projectsBySlotId.get(slot.id)
             const taken = takenSlotIds?.has(slot.id) ?? !!project
@@ -129,8 +170,8 @@ export default function FloorMap({
             const isOwnHighlight = highlightOwnSlot === slot.id
             const colors = CAREER_COLORS[slot.career]
 
-            const baseFill = taken ? colors.fill : 'white'
-            const opacity = isFiltered ? 0.25 : 1
+            const baseFill = colors.fill
+            const opacity = isFiltered ? 0.4 : 1
             const isInteractive = onSlotClick && !taken && !isFiltered
 
             return (
@@ -146,9 +187,9 @@ export default function FloorMap({
                   y={slot.row * CELL + 0.5}
                   width={CELL - 1}
                   height={CELL - 1}
-                  fill={isSelected ? colors.stroke : baseFill}
+                  fill={isSelected ? colors.stroke : taken ? colors.fill : baseFill}
                   stroke={isSelected || isOwnHighlight ? '#111' : colors.stroke}
-                  strokeWidth={isSelected || isOwnHighlight ? 2 : 1}
+                  strokeWidth={isSelected || isOwnHighlight ? 2 : 0.7}
                   opacity={opacity}
                   style={{
                     transition: 'fill 200ms cubic-bezier(0.23, 1, 0.32, 1), stroke-width 160ms cubic-bezier(0.23, 1, 0.32, 1)',
@@ -160,8 +201,8 @@ export default function FloorMap({
                     y={slot.row * CELL + 0.5}
                     width={CELL - 1}
                     height={CELL - 1}
-                    fill={colors.fill}
-                    opacity={0.6}
+                    fill={colors.stroke}
+                    opacity={0.3}
                     pointerEvents="none"
                   />
                 )}
@@ -182,13 +223,13 @@ export default function FloorMap({
           })}
 
           {/* Section labels (numbers above/below building) */}
-          {showLabels && sectionLabels.map((s) => (
+          {showLabels && SECTION_LABELS.map((s) => (
             <text
-              key={`section-${s.num}`}
+              key={`section-${s.num}-${s.row}`}
               x={s.col * CELL}
-              y={s.row * CELL + 4}
+              y={s.row * CELL + CELL * 0.85}
               textAnchor="middle"
-              fontSize={CELL * 0.7}
+              fontSize={CELL * 0.95}
               fontWeight="900"
               fill="#111"
               fontFamily="Raleway, sans-serif"
