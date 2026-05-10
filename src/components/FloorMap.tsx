@@ -81,29 +81,6 @@ export default function FloorMap({
             strokeWidth={3}
           />
 
-          {/* Stair top notch (small gray protrusion above stage) */}
-          <rect
-            x={GRID.stairsTop.col * CELL}
-            y={GRID.stairsTop.row * CELL}
-            width={GRID.stairsTop.width * CELL}
-            height={GRID.stairsTop.height * CELL}
-            fill="#9CA3AF"
-            stroke="#111"
-            strokeWidth={1.5}
-          />
-          {/* Inner divider lines for stair notch */}
-          {Array.from({ length: GRID.stairsTop.width - 1 }).map((_, i) => (
-            <line
-              key={`stair-top-divider-${i}`}
-              x1={(GRID.stairsTop.col + i + 1) * CELL}
-              y1={GRID.stairsTop.row * CELL}
-              x2={(GRID.stairsTop.col + i + 1) * CELL}
-              y2={(GRID.stairsTop.row + GRID.stairsTop.height) * CELL}
-              stroke="#6B7280"
-              strokeWidth={0.5}
-            />
-          ))}
-
           {/* Stage outer (heavy black border around white + gray stairs) */}
           <rect
             x={GRID.stage.col * CELL}
