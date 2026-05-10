@@ -92,12 +92,19 @@ export default function FloorMap({
             strokeWidth={2.5}
           />
 
-          {/* Stairs (gray block on right portion of stage) */}
+          {/* L-shaped stairs (gray) inside stage — narrower top, wider main */}
           <rect
-            x={GRID.stairs.col * CELL}
-            y={GRID.stairs.row * CELL}
-            width={GRID.stairs.width * CELL}
-            height={GRID.stairs.height * CELL}
+            x={GRID.stairsTop.col * CELL}
+            y={GRID.stairsTop.row * CELL}
+            width={GRID.stairsTop.width * CELL}
+            height={GRID.stairsTop.height * CELL}
+            fill="#9CA3AF"
+          />
+          <rect
+            x={GRID.stairsMain.col * CELL}
+            y={GRID.stairsMain.row * CELL}
+            width={GRID.stairsMain.width * CELL}
+            height={GRID.stairsMain.height * CELL}
             fill="#9CA3AF"
           />
           {/* Stage outer border on top of fills (so border shows over fills) */}
