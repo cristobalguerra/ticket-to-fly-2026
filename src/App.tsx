@@ -6,6 +6,7 @@ import Admin from './pages/Admin'
 import Ceremony from './pages/Ceremony'
 import MapEditor from './pages/MapEditor'
 import Info from './pages/Info'
+import Projects from './pages/Projects'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/ceremony" element={<Ceremony />} />
         <Route path="/map-editor" element={<MapEditor />} />
         <Route path="/info" element={<Info />} />
+        <Route path="/projects" element={<Projects />} />
       </Routes>
     </HashRouter>
   )

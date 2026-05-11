@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Vote, Upload, Settings, Info } from 'lucide-react'
+import { Vote, Upload, Settings, Info, LayoutGrid } from 'lucide-react'
 import FlyingPlane from '../components/FlyingPlane'
 import Footer from '../components/Footer'
 
@@ -41,6 +41,16 @@ export default function Home() {
         >
           <Vote className="w-6 h-6" />
           Votar
+        </Link>
+
+        <Link
+          to="/projects"
+          className="stagger-in flex items-center justify-center gap-3 bg-white/40 backdrop-blur-sm text-udem-black font-bold py-3 rounded-2xl border-2 border-udem-black/20 hover:bg-white/60"
+          style={{ transition: 'background-color 200ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+          data-i="3"
+        >
+          <LayoutGrid className="w-5 h-5" />
+          Ver Proyectos
         </Link>
 
         <Link
