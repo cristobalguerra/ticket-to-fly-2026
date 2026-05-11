@@ -4,7 +4,7 @@ import { Plane, Shield } from 'lucide-react'
 export default function Footer() {
   const logos = import.meta.env.BASE_URL + 'logos-ead.svg'
   return (
-    <footer className="bg-udem-black text-white py-8 px-6">
+    <footer className="bg-black text-white py-8 px-6">
       <div className="max-w-3xl mx-auto">
         {/* Title left, logos right */}
         <div className="flex items-center justify-between gap-4 mb-6">
@@ -25,7 +25,7 @@ export default function Footer() {
         {/* About */}
         <div className="mb-5">
           <h3 className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-1.5">Acerca de</h3>
-          <p className="text-white/70 text-xs leading-relaxed">
+          <p className="text-white/70 text-[11px] leading-relaxed">
             Ticket to Fly es la exposición semestral de Proyectos de Evaluación Final de los alumnos egresados de la Escuela de Arte y Diseño de la Universidad de Monterrey. Cada edición presenta el trabajo culminante de los futuros diseñadores, artistas y creadores formados en el Centro Roberto Garza Sada, así como el reconocimiento al mejor proyecto de cada programa académico y al mejor proyecto de toda la Escuela.
           </p>
         </div>
@@ -35,7 +35,7 @@ export default function Footer() {
           <h3 className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-1.5 flex items-center gap-1.5">
             <Shield className="w-3 h-3" /> Privacidad de Datos
           </h3>
-          <p className="text-white/60 text-xs leading-relaxed">
+          <p className="text-white/60 text-[11px] leading-relaxed">
             Esta plataforma recopila únicamente el nombre del profesor votante con fines de validación interna de la votación. Los datos personales no se comparten con terceros y se conservarán únicamente durante el periodo del evento. Las imágenes y contenidos de los proyectos son propiedad intelectual de sus autores y se utilizan exclusivamente para fines académicos y de exposición.
           </p>
         </div>
@@ -43,7 +43,7 @@ export default function Footer() {
         {/* Use of platform */}
         <div className="mb-6">
           <h3 className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-1.5">Uso de la Plataforma</h3>
-          <p className="text-white/60 text-xs leading-relaxed">
+          <p className="text-white/60 text-[11px] leading-relaxed">
             El sistema de votación está reservado a los profesores acreditados de la EAD. Cada profesor puede emitir un único voto por carrera y un voto general por edición. La administración del evento se reserva el derecho de anular votos duplicados o emitidos con identidades no verificables.
           </p>
         </div>
