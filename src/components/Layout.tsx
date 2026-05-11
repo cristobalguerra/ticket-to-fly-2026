@@ -21,18 +21,15 @@ export default function Layout({ children, showBack, showFooter = true }: Props)
             &larr; Inicio
           </Link>
         )}
-        <div className="flex items-center gap-3 ml-auto">
-          <img
-            src={logos}
-            alt="EAD · CRGS · UDEM"
-            className="h-6 opacity-90"
-          />
-          <div className="w-px h-5 bg-white/20" />
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-black text-xs tracking-widest uppercase">Ticket to Fly</span>
-            <span className="text-white/40 text-[10px] font-light tracking-widest">2026</span>
-          </div>
+        <div className="flex items-baseline gap-1.5">
+          <span className="font-black text-xs tracking-widest uppercase">Ticket to Fly</span>
+          <span className="text-white/40 text-[10px] font-light tracking-widest">2026</span>
         </div>
+        <img
+          src={logos}
+          alt="EAD · CRGS · UDEM"
+          className="h-12 opacity-90 ml-auto"
+        />
       </header>
       <main className="flex-1 bg-gradient-to-b from-[#f0fdf4] to-[#ecfeff] page-enter">{children}</main>
       {showFooter && <Footer />}

@@ -6,19 +6,18 @@ export default function Footer() {
   return (
     <footer className="bg-udem-black text-white py-8 px-6">
       <div className="max-w-3xl mx-auto">
-        {/* Title with logos inline */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          <img
-            src={logos}
-            alt="EAD · CRGS · UDEM"
-            className="h-6 opacity-90"
-          />
-          <div className="w-px h-5 bg-white/20" />
+        {/* Title left, logos right */}
+        <div className="flex items-center justify-between gap-4 mb-6">
           <div className="inline-flex items-baseline gap-1.5">
             <Plane className="w-3.5 h-3.5 text-udem-yellow translate-y-0.5" />
             <span className="font-black text-xs tracking-widest uppercase">Ticket to Fly</span>
             <span className="text-white/40 text-[10px] font-light tracking-widest">2026</span>
           </div>
+          <img
+            src={logos}
+            alt="EAD · CRGS · UDEM"
+            className="h-12 opacity-90"
+          />
         </div>
 
         <div className="h-px bg-white/10 mb-6" />
