@@ -68,3 +68,39 @@ export function buildDefaultFloorPlan(
 
 export type CellType = 'empty' | 'table' | 'stage' | 'stairs' | 'slot'
 export type CellState = { type: CellType; career?: SlotCareer; slotId?: string }
+
+// Auto-position section labels over clusters of tables
+// nums: section numbers in the order they should appear (left to right)
+export function autoPositionLabels(
+  tables: Table[],
+  nums: number[],
+  position: 'top' | 'bottom',
+): { num: number; col: number; row: number }[] {
+  if (tables.length === 0 || nums.length === 0) return []
+
+  const sorted = [...tables].sort((a, b) => a.col - b.col)
+  const minCol = sorted[0].col
+  const maxCol = Math.max(...sorted.map((t) => t.col + t.width))
+  const range = maxCol - minCol
+  const step = range / nums.length
+
+  // Find row for label placement
+  const topRow = Math.min(...tables.map((t) => t.row))
+  const bottomRow = Math.max(...tables.map((t) => t.row))
+  const labelRow = position === 'top' ? Math.max(0, topRow - 2) : bottomRow + 2
+
+  return nums.map((num, i) => {
+    const sectionStart = minCol + i * step
+    const sectionEnd = minCol + (i + 1) * step
+    // Find tables whose horizontal center falls in this column slice
+    const inRange = sorted.filter((t) => {
+      const center = t.col + t.width / 2
+      return center >= sectionStart && center < sectionEnd
+    })
+    // If no tables in this slice, use the geometric center of the slice
+    const labelCol = inRange.length > 0
+      ? inRange.reduce((sum, t) => sum + t.col + t.width / 2, 0) / inRange.length
+      : sectionStart + step / 2
+    return { num, col: labelCol, row: labelRow }
+  })
+}

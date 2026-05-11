@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Layout from '../components/Layout'
 import PinGate from '../components/PinGate'
 import { CAREER_COLORS, GRID, SLOTS as DEFAULT_SLOTS, TABLES as DEFAULT_TABLES, SECTION_LABELS as DEFAULT_LABELS, type SlotCareer } from '../lib/floor-plan'
-import { getFloorPlan, saveFloorPlan, buildDefaultFloorPlan, type FloorPlanData } from '../lib/floor-plan-storage'
+import { getFloorPlan, saveFloorPlan, buildDefaultFloorPlan, autoPositionLabels, type FloorPlanData } from '../lib/floor-plan-storage'
 import { Save, RotateCcw, Eraser, Square, Trash2, Tag, Loader2 } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
@@ -316,22 +316,31 @@ export default function MapEditor() {
                 )
               })}
 
-              {/* Section labels */}
-              {[...data.topLabels, ...data.bottomLabels].map((l, i) => (
-                <text
-                  key={`label-${i}`}
-                  x={l.col * CELL}
-                  y={l.row * CELL + CELL * 0.8}
-                  textAnchor="middle"
-                  fontSize={CELL * 0.7}
-                  fontWeight="900"
-                  fill="#111"
-                  fontFamily="Raleway, sans-serif"
-                  pointerEvents="none"
-                >
-                  {l.num}
-                </text>
-              ))}
+              {/* Section labels — auto-centered over table clusters */}
+              {(() => {
+                const midRow = gridRows / 2
+                const topTables = data.tables.filter((t) => t.row < midRow)
+                const bottomTables = data.tables.filter((t) => t.row >= midRow)
+                const topNums = data.topLabels.map((l) => l.num)
+                const bottomNums = data.bottomLabels.map((l) => l.num)
+                const top = autoPositionLabels(topTables, topNums, 'top')
+                const bottom = autoPositionLabels(bottomTables, bottomNums, 'bottom')
+                return [...top, ...bottom].map((l, i) => (
+                  <text
+                    key={`label-${i}`}
+                    x={l.col * CELL}
+                    y={l.row * CELL + CELL * 0.8}
+                    textAnchor="middle"
+                    fontSize={CELL * 0.7}
+                    fontWeight="900"
+                    fill="#111"
+                    fontFamily="Raleway, sans-serif"
+                    pointerEvents="none"
+                  >
+                    {l.num}
+                  </text>
+                ))
+              })()}
             </svg>
           </div>
 

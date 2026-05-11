@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { GRID, SLOTS as DEFAULT_SLOTS, TABLES as DEFAULT_TABLES, SECTION_LABELS as DEFAULT_LABELS, CAREER_COLORS, type Slot, type SlotCareer } from '../lib/floor-plan'
-import { onFloorPlanChange, buildDefaultFloorPlan, type FloorPlanData } from '../lib/floor-plan-storage'
+import { onFloorPlanChange, buildDefaultFloorPlan, autoPositionLabels, type FloorPlanData } from '../lib/floor-plan-storage'
 import type { Project } from '../types'
 
 interface Props {
@@ -242,21 +242,30 @@ export default function FloorMap({
             )
           })}
 
-          {/* Section labels */}
-          {showLabels && [...plan.topLabels, ...plan.bottomLabels].map((s, i) => (
-            <text
-              key={`label-${i}`}
-              x={s.col * CELL}
-              y={s.row * CELL + CELL * 0.85}
-              textAnchor="middle"
-              fontSize={CELL * 0.95}
-              fontWeight="900"
-              fill="#111"
-              fontFamily="Raleway, sans-serif"
-            >
-              {s.num}
-            </text>
-          ))}
+          {/* Section labels — auto-positioned over table clusters */}
+          {showLabels && (() => {
+            const midRow = (plan.buildingTopRow ?? 1) + ((plan.buildingBottomRow ?? 26) - (plan.buildingTopRow ?? 1)) / 2
+            const topTables = plan.tables.filter((t) => t.row < midRow)
+            const bottomTables = plan.tables.filter((t) => t.row >= midRow)
+            const topNums = plan.topLabels.map((l) => l.num)
+            const bottomNums = plan.bottomLabels.map((l) => l.num)
+            const top = autoPositionLabels(topTables, topNums, 'top')
+            const bottom = autoPositionLabels(bottomTables, bottomNums, 'bottom')
+            return [...top, ...bottom].map((s, i) => (
+              <text
+                key={`label-${i}`}
+                x={s.col * CELL}
+                y={s.row * CELL + CELL * 0.85}
+                textAnchor="middle"
+                fontSize={CELL * 0.95}
+                fontWeight="900"
+                fill="#111"
+                fontFamily="Raleway, sans-serif"
+              >
+                {s.num}
+              </text>
+            ))
+          })()}
         </svg>
       </div>
 
