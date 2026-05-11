@@ -10,8 +10,8 @@ export default function Footer() {
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="inline-flex items-baseline gap-1.5">
             <Plane className="w-3.5 h-3.5 text-udem-yellow translate-y-0.5" />
-            <span className="font-black text-[9px] tracking-widest uppercase text-white/60">Ticket to Fly</span>
-            <span className="text-white/40 text-[9px] font-light tracking-widest">2026</span>
+            <span className="font-black text-[7px] tracking-widest uppercase text-white/60">Ticket to Fly</span>
+            <span className="text-white/40 text-[7px] font-light tracking-widest">2026</span>
           </div>
           <img
             src={logos}

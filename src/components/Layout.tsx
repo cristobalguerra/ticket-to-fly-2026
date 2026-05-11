@@ -22,8 +22,8 @@ export default function Layout({ children, showBack, showFooter = true }: Props)
           </Link>
         )}
         <div className="flex items-baseline gap-1.5">
-          <span className="font-black text-[9px] tracking-widest uppercase text-white/60">Ticket to Fly</span>
-          <span className="text-white/40 text-[9px] font-light tracking-widest">2026</span>
+          <span className="font-black text-[7px] tracking-widest uppercase text-white/60">Ticket to Fly</span>
+          <span className="text-white/40 text-[7px] font-light tracking-widest">2026</span>
         </div>
         <img
           src={logos}
