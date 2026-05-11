@@ -5,11 +5,14 @@ import { hasAlreadyVoted, submitAllVotes } from '../lib/votes'
 import { isVotingOpen } from '../lib/settings'
 import Layout from '../components/Layout'
 import ProjectCard from '../components/ProjectCard'
-import { Loader2, CheckCircle2, XCircle, ChevronRight, Send } from 'lucide-react'
+import { Loader2, CheckCircle2, XCircle, ChevronRight, Send, Clock } from 'lucide-react'
 
-type Step = 'name' | Career | 'general' | 'confirm' | 'done' | 'closed' | 'already'
+type Step = 'name' | Career | 'general' | 'confirm' | 'done' | 'closed' | 'already' | 'scheduled'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
+
+// Voting auto-opens at this time (Monterrey, UTC-6)
+const VOTING_OPENS_AT = new Date('2026-05-26T18:00:00-06:00')
 
 export default function Vote() {
   const [step, setStep] = useState<Step>('name')
@@ -22,6 +25,10 @@ export default function Vote() {
   const [currentCareerIdx, setCurrentCareerIdx] = useState(0)
 
   useEffect(() => {
+    if (Date.now() < VOTING_OPENS_AT.getTime()) {
+      setStep('scheduled')
+      return
+    }
     isVotingOpen().then((open) => {
       if (!open) setStep('closed')
     })
@@ -94,6 +101,14 @@ export default function Vote() {
       }
     }
     return selected
+  }
+
+  if (step === 'scheduled') {
+    return (
+      <Layout showBack>
+        <ScheduledScreen openAt={VOTING_OPENS_AT} />
+      </Layout>
+    )
   }
 
   if (step === 'closed') {
@@ -303,5 +318,89 @@ export default function Vote() {
         </button>
       </div>
     </Layout>
+  )
+}
+
+function ScheduledScreen({ openAt }: { openAt: Date }) {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  const diff = Math.max(0, openAt.getTime() - now)
+  const days = Math.floor(diff / 86_400_000)
+  const hours = Math.floor((diff % 86_400_000) / 3_600_000)
+  const minutes = Math.floor((diff % 3_600_000) / 60_000)
+  const seconds = Math.floor((diff % 60_000) / 1000)
+
+  if (diff === 0) {
+    return (
+      <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
+        <p className="text-sm text-gray-500 mb-3">La votación ya abrió</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-udem-black text-white font-bold px-6 py-3 rounded-xl"
+        >
+          Comenzar a votar
+        </button>
+      </div>
+    )
+  }
+
+  const opensLabel = openAt.toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  })
+  const timeLabel = openAt.toLocaleTimeString('es-MX', {
+    hour: '2-digit', minute: '2-digit', hour12: true,
+  })
+
+  return (
+    <div className="step-enter flex flex-col items-center justify-center min-h-[70dvh] p-6 text-center">
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-udem-black/5 text-udem-black/60 text-xs font-bold tracking-widest uppercase mb-6">
+        <Clock className="w-3 h-3" />
+        Votación programada
+      </div>
+
+      <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
+        La votación abre el día del evento
+      </h1>
+      <p className="text-udem-black/60 text-sm mb-10 max-w-md">
+        {opensLabel} a las {timeLabel}. Cerrará 2 horas después.
+      </p>
+
+      {/* Countdown */}
+      <div className="grid grid-cols-4 gap-2 sm:gap-3 w-full max-w-md mb-10">
+        <CountdownCell value={days} label="Días" />
+        <CountdownCell value={hours} label="Horas" />
+        <CountdownCell value={minutes} label="Min" />
+        <CountdownCell value={seconds} label="Seg" />
+      </div>
+
+      <p className="text-xs text-udem-black/40 max-w-sm leading-relaxed">
+        Mientras tanto, puedes revisar los proyectos para emitir un voto informado el día del evento.
+      </p>
+      <a
+        href="#/projects"
+        className="mt-5 inline-flex items-center gap-2 text-udem-black font-bold text-sm border-b border-udem-black/30 hover:border-udem-black pb-0.5"
+        style={{ transition: `border-color 180ms ${EASE_OUT}` }}
+      >
+        Ver proyectos <ChevronRight className="w-4 h-4" />
+      </a>
+    </div>
+  )
+}
+
+function CountdownCell({ value, label }: { value: number; label: string }) {
+  const display = String(value).padStart(2, '0')
+  return (
+    <div className="bg-white rounded-2xl border border-udem-black/10 shadow-sm py-4 px-2">
+      <div className="text-4xl sm:text-5xl font-black tabular-nums text-udem-black leading-none">
+        {display}
+      </div>
+      <div className="text-[10px] sm:text-xs uppercase tracking-widest text-udem-black/40 font-bold mt-1.5">
+        {label}
+      </div>
+    </div>
   )
 }
