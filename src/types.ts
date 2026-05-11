@@ -1,4 +1,4 @@
-export type Career = 'LDG' | 'LAED' | 'LDM' | 'LINT' | 'LDI' | 'LA'
+export type Career = 'LDG' | 'LAED' | 'LDM' | 'LINT' | 'LDI' | 'LA' | 'POSG'
 
 export const CAREERS: { key: Career; name: string }[] = [
   { key: 'LDG', name: 'Diseño Gráfico' },
@@ -7,6 +7,7 @@ export const CAREERS: { key: Career; name: string }[] = [
   { key: 'LINT', name: 'Diseño de Interiores' },
   { key: 'LDI', name: 'Diseño Industrial' },
   { key: 'LA', name: 'Artes' },
+  { key: 'POSG', name: 'Posgrados' },
 ]
 
 export interface Project {
