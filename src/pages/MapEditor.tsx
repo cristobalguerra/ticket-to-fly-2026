@@ -131,7 +131,7 @@ export default function MapEditor() {
 
   if (loading) {
     return (
-      <Layout showBack>
+      <Layout showBack showFooter={false}>
         <div className="flex items-center justify-center min-h-[60dvh]">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
@@ -144,7 +144,7 @@ export default function MapEditor() {
 
   return (
     <PinGate label="Editor del Plano">
-      <Layout showBack>
+      <Layout showBack showFooter={false}>
         <div className="max-w-[1200px] mx-auto p-4 pb-8">
           <div className="flex items-center justify-between mt-4 mb-4">
             <h1 className="text-2xl font-bold">Editor del Plano</h1>

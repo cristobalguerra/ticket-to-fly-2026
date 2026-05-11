@@ -109,7 +109,11 @@ export default function Info() {
         {/* Mounting diagram */}
         <div className="stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6" data-i="7">
           <h2 className="text-lg font-bold mb-4">Cómo Montar</h2>
-          <MountingDiagram />
+          <img
+            src={import.meta.env.BASE_URL + 'como-montar.png'}
+            alt="Diagrama de montaje: posters sobre foam rígido con soporte triangular, usar solo la mesa frontal"
+            className="w-full rounded-xl"
+          />
           <ul className="mt-4 space-y-1.5 text-xs text-udem-black/70">
             <li>• <strong>Posters:</strong> Foam rígido</li>
             <li>• <strong>Soporte triangular:</strong> Foam, mínimo 15 × 15 cm</li>
@@ -186,27 +190,3 @@ function Bullet({ children }: { children: React.ReactNode }) {
   )
 }
 
-function MountingDiagram() {
-  return (
-    <div className="bg-gradient-to-b from-gray-50 to-white rounded-xl p-6 border border-gray-100">
-      <svg viewBox="0 0 320 200" className="w-full max-w-md mx-auto block" xmlns="http://www.w3.org/2000/svg">
-        {/* Table (3D perspective) */}
-        <polygon points="60,150 260,150 290,170 90,170" fill="white" stroke="#9CA3AF" strokeWidth={1.5} />
-        <polygon points="260,150 290,170 290,180 260,160" fill="#E5E7EB" stroke="#9CA3AF" strokeWidth={1.5} />
-        <polygon points="60,150 90,170 90,180 60,160" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth={1.5} />
-        {/* Table divider line */}
-        <line x1="160" y1="150" x2="190" y2="170" stroke="#9CA3AF" strokeWidth={1} strokeDasharray="3,3" />
-        {/* Posters (foam rigido) */}
-        <polygon points="115,40 175,30 175,150 115,150" fill="#F97316" stroke="#C2410C" strokeWidth={1.5} />
-        <polygon points="145,35 205,25 205,148 145,150" fill="#FB923C" stroke="#C2410C" strokeWidth={1.5} />
-        {/* Triangular support */}
-        <polygon points="100,150 130,150 115,110" fill="#EA580C" stroke="#9A3412" strokeWidth={1.5} />
-        {/* Labels */}
-        <text x="62" y="172" fontSize="6" fontWeight="700" fill="#991B1B">NO USAR</text>
-        <text x="62" y="180" fontSize="6" fontWeight="700" fill="#991B1B">ESTA MESA</text>
-        <text x="200" y="172" fontSize="6" fontWeight="700" fill="#15803D">USAR ESTA MESA</text>
-        <text x="206" y="180" fontSize="6" fontWeight="700" fill="#15803D">PARA EXPONER</text>
-      </svg>
-    </div>
-  )
-}

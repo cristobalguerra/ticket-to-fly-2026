@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
+import Footer from './Footer'
 
 interface Props {
   children: React.ReactNode
   showBack?: boolean
+  showFooter?: boolean
 }
 
-export default function Layout({ children, showBack }: Props) {
+export default function Layout({ children, showBack, showFooter = true }: Props) {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="bg-udem-black text-white px-4 py-3 flex items-center gap-3 sticky top-0 z-30">
@@ -24,6 +26,7 @@ export default function Layout({ children, showBack }: Props) {
         </div>
       </header>
       <main className="flex-1 bg-gradient-to-b from-[#f0fdf4] to-[#ecfeff] page-enter">{children}</main>
+      {showFooter && <Footer />}
     </div>
   )
 }

@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Vote, Upload, Settings, Info } from 'lucide-react'
 import FlyingPlane from '../components/FlyingPlane'
+import Footer from '../components/Footer'
 
 export default function Home() {
   return (
+    <>
     <div className="home-bg min-h-dvh flex flex-col items-center justify-center p-6 text-center relative">
       <FlyingPlane />
 
@@ -80,5 +82,7 @@ export default function Home() {
         <p>Roberto Garza Sada</p>
       </div>
     </div>
+    <Footer />
+    </>
   )
 }
