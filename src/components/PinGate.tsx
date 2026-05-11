@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { Lock } from 'lucide-react'
 
-const CORRECT_PIN = '2026'
+const DEFAULT_PIN = '2026'
 
 interface Props {
   children: React.ReactNode
   label?: string
+  pin?: string
 }
 
-export default function PinGate({ children, label = 'Acceso restringido' }: Props) {
+export default function PinGate({ children, label = 'Acceso restringido', pin: correctPin = DEFAULT_PIN }: Props) {
   const [unlocked, setUnlocked] = useState(false)
   const [pin, setPin] = useState('')
   const [error, setError] = useState(false)
@@ -16,7 +17,7 @@ export default function PinGate({ children, label = 'Acceso restringido' }: Prop
   if (unlocked) return <>{children}</>
 
   function tryUnlock() {
-    if (pin === CORRECT_PIN) setUnlocked(true)
+    if (pin === correctPin) setUnlocked(true)
     else setError(true)
   }
 
