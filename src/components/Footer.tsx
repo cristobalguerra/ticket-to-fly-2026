@@ -1,47 +1,53 @@
 import { Link } from 'react-router-dom'
-import { Plane } from 'lucide-react'
+import { Plane, Shield } from 'lucide-react'
 
 export default function Footer() {
   const logos = import.meta.env.BASE_URL + 'logos-ead.svg'
   return (
-    <footer className="bg-udem-black text-white py-10 px-6">
+    <footer className="bg-udem-black text-white py-12 px-6">
       <div className="max-w-3xl mx-auto">
         {/* Logos */}
         <img
           src={logos}
           alt="Escuela de Arte y Diseño, Centro Roberto Garza Sada, Universidad de Monterrey"
-          className="w-full max-w-2xl mx-auto h-auto opacity-90 mb-8"
+          className="w-full max-w-xl mx-auto h-auto opacity-90 mb-8"
         />
 
-        {/* Divider */}
         <div className="h-px bg-white/10 mb-8" />
 
-        {/* Event title + meta */}
+        {/* Title */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 mb-2">
+          <div className="inline-flex items-center gap-2">
             <Plane className="w-4 h-4 text-udem-yellow" />
             <span className="font-black text-sm tracking-widest uppercase">Ticket to Fly</span>
             <span className="text-white/40 text-xs font-light tracking-widest">2026</span>
           </div>
-          <p className="text-white/50 text-xs leading-relaxed max-w-md mx-auto">
-            Exposición de Proyectos de Evaluación Final de la Escuela de Arte y Diseño · Centro Roberto Garza Sada · UDEM
+        </div>
+
+        {/* About */}
+        <div className="mb-8">
+          <h3 className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-2">Acerca de</h3>
+          <p className="text-white/70 text-sm leading-relaxed">
+            Ticket to Fly es la exposición semestral de Proyectos de Evaluación Final de los alumnos egresados de la Escuela de Arte y Diseño de la Universidad de Monterrey. Cada edición presenta el trabajo culminante de los futuros diseñadores, artistas y creadores formados en el Centro Roberto Garza Sada, así como el reconocimiento al mejor proyecto de cada programa académico y al mejor proyecto de toda la Escuela.
           </p>
         </div>
 
-        {/* Event details */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center text-xs mb-8">
-          <div>
-            <p className="text-white/30 uppercase tracking-wider font-bold mb-0.5">Fecha</p>
-            <p className="font-semibold text-white">26 de Mayo</p>
-          </div>
-          <div>
-            <p className="text-white/30 uppercase tracking-wider font-bold mb-0.5">Inauguración</p>
-            <p className="font-semibold text-white tabular-nums">5:00 PM</p>
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <p className="text-white/30 uppercase tracking-wider font-bold mb-0.5">Lugar</p>
-            <p className="font-semibold text-white">6to piso · CRGS</p>
-          </div>
+        {/* Privacy */}
+        <div className="mb-8">
+          <h3 className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5">
+            <Shield className="w-3 h-3" /> Privacidad de Datos
+          </h3>
+          <p className="text-white/60 text-xs leading-relaxed">
+            Esta plataforma recopila únicamente el nombre del profesor votante con fines de validación interna de la votación. Los datos personales no se comparten con terceros y se conservarán únicamente durante el periodo del evento. Las imágenes y contenidos de los proyectos son propiedad intelectual de sus autores y se utilizan exclusivamente para fines académicos y de exposición.
+          </p>
+        </div>
+
+        {/* Use of platform */}
+        <div className="mb-10">
+          <h3 className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-2">Uso de la Plataforma</h3>
+          <p className="text-white/60 text-xs leading-relaxed">
+            El sistema de votación está reservado a los profesores acreditados de la EAD. Cada profesor puede emitir un único voto por carrera y un voto general por edición. La administración del evento se reserva el derecho de anular votos duplicados o emitidos con identidades no verificables.
+          </p>
         </div>
 
         {/* Nav */}
@@ -53,7 +59,7 @@ export default function Footer() {
         </div>
 
         <p className="text-center text-white/30 text-[10px] tracking-wider uppercase">
-          © 2026 Universidad de Monterrey
+          © 2026 Universidad de Monterrey · Escuela de Arte y Diseño
         </p>
       </div>
     </footer>
