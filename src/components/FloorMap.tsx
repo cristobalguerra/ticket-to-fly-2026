@@ -183,64 +183,113 @@ export default function FloorMap({
             </g>
           ))}
 
-          {/* Slots (colored cells) */}
-          {plan.slots.map((slot) => {
-            const project = projectsBySlotId.get(slot.id)
-            const taken = takenSlotIds?.has(slot.id) ?? !!project
-            const isFiltered = filterCareer && slot.career !== filterCareer
-            const isSelected = selectedSlotId === slot.id
-            const isHovered = hoveredSlot === slot.id
-            const isOwnHighlight = highlightOwnSlot === slot.id
-            const colors = CAREER_COLORS[slot.career]
+          {/* Slots (colored cells) — render non-selected first, then selected last so it sits on top */}
+          {(() => {
+            const sortedSlots = [...plan.slots].sort((a) => (a.id === selectedSlotId ? 1 : -1))
+            return sortedSlots.map((slot) => {
+              const project = projectsBySlotId.get(slot.id)
+              const taken = takenSlotIds?.has(slot.id) ?? !!project
+              const isFiltered = filterCareer && slot.career !== filterCareer
+              const isSelected = selectedSlotId === slot.id
+              const isHovered = hoveredSlot === slot.id
+              const isOwnHighlight = highlightOwnSlot === slot.id
+              const colors = CAREER_COLORS[slot.career]
 
-            const opacity = isFiltered ? 0.4 : 1
-            const isInteractive = onSlotClick && !taken && !isFiltered
+              const opacity = isFiltered ? 0.4 : 1
+              const isInteractive = onSlotClick && !taken && !isFiltered
 
-            return (
-              <g
-                key={slot.id}
-                style={{ cursor: isInteractive ? 'pointer' : 'default' }}
-                onClick={() => isInteractive && onSlotClick?.(slot)}
-                onMouseEnter={() => setHoveredSlot(slot.id)}
-                onMouseLeave={() => setHoveredSlot(null)}
-              >
-                <rect
-                  x={slot.col * CELL + 0.5}
-                  y={slot.row * CELL + 0.5}
-                  width={CELL - 1}
-                  height={CELL - 1}
-                  fill={isSelected ? colors.stroke : colors.fill}
-                  stroke={isSelected || isOwnHighlight ? '#111' : colors.stroke}
-                  strokeWidth={isSelected || isOwnHighlight ? 2 : 0.7}
-                  opacity={opacity}
-                  style={{ transition: 'fill 200ms cubic-bezier(0.23, 1, 0.32, 1), stroke-width 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
-                />
-                {isInteractive && isHovered && (
+              const cx = slot.col * CELL + CELL / 2
+              const cy = slot.row * CELL + CELL / 2
+
+              return (
+                <g
+                  key={slot.id}
+                  style={{ cursor: isInteractive ? 'pointer' : 'default' }}
+                  onMouseEnter={() => setHoveredSlot(slot.id)}
+                  onMouseLeave={() => setHoveredSlot(null)}
+                >
+                  {/* Base slot rect */}
                   <rect
                     x={slot.col * CELL + 0.5}
                     y={slot.row * CELL + 0.5}
                     width={CELL - 1}
                     height={CELL - 1}
-                    fill={colors.stroke}
-                    opacity={0.3}
+                    fill={colors.fill}
+                    stroke={colors.stroke}
+                    strokeWidth={0.7}
+                    opacity={opacity}
                     pointerEvents="none"
                   />
-                )}
-                {isOwnHighlight && (
-                  <circle
-                    cx={slot.col * CELL + CELL / 2}
-                    cy={slot.row * CELL + CELL / 2}
-                    r={CELL * 0.7}
-                    fill="none"
-                    stroke="#111"
-                    strokeWidth={1.5}
-                    opacity={0.4}
-                    style={{ transformOrigin: 'center', animation: 'ownPulse 1.6s cubic-bezier(0.23, 1, 0.32, 1) infinite' }}
-                  />
-                )}
-              </g>
-            )
-          })}
+
+                  {/* Hover tint */}
+                  {isInteractive && isHovered && !isSelected && (
+                    <rect
+                      x={slot.col * CELL + 0.5}
+                      y={slot.row * CELL + 0.5}
+                      width={CELL - 1}
+                      height={CELL - 1}
+                      fill={colors.stroke}
+                      opacity={0.3}
+                      pointerEvents="none"
+                    />
+                  )}
+
+                  {/* Own-slot highlight pulse */}
+                  {isOwnHighlight && !isSelected && (
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={CELL * 0.7}
+                      fill="none"
+                      stroke="#111"
+                      strokeWidth={1.5}
+                      opacity={0.4}
+                      pointerEvents="none"
+                      style={{ transformOrigin: 'center', animation: 'ownPulse 1.6s cubic-bezier(0.23, 1, 0.32, 1) infinite' }}
+                    />
+                  )}
+
+                  {/* BIG selected marker — circle 2.2x the cell with check */}
+                  {isSelected && (
+                    <g pointerEvents="none" style={{ animation: 'slotSelect 320ms cubic-bezier(0.23, 1, 0.32, 1)' }}>
+                      {/* Outer glow ring */}
+                      <circle cx={cx} cy={cy} r={CELL * 1.3} fill={colors.fill} opacity={0.35} />
+                      {/* Solid medallion */}
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={CELL * 0.95}
+                        fill={colors.stroke}
+                        stroke="#111"
+                        strokeWidth={1.5}
+                      />
+                      {/* Check mark */}
+                      <path
+                        d={`M ${cx - CELL * 0.35} ${cy + CELL * 0.05} L ${cx - CELL * 0.1} ${cy + CELL * 0.3} L ${cx + CELL * 0.4} ${cy - CELL * 0.25}`}
+                        stroke="white"
+                        strokeWidth={2.5}
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </g>
+                  )}
+
+                  {/* Larger transparent tap target for mobile */}
+                  {isInteractive && (
+                    <rect
+                      x={slot.col * CELL - CELL * 0.5}
+                      y={slot.row * CELL - CELL * 0.5}
+                      width={CELL * 2}
+                      height={CELL * 2}
+                      fill="transparent"
+                      onClick={() => onSlotClick?.(slot)}
+                    />
+                  )}
+                </g>
+              )
+            })
+          })()}
 
           {/* Section labels — auto-positioned over table clusters */}
           {showLabels && (() => {
@@ -323,6 +372,10 @@ export default function FloorMap({
         @keyframes ownPulse {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 0.7; transform: scale(1.15); }
+        }
+        @keyframes slotSelect {
+          from { opacity: 0; transform: scale(0.4); transform-origin: center; }
+          to { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>
