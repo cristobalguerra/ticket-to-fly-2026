@@ -4,10 +4,10 @@ import { Plane, Shield } from 'lucide-react'
 export default function Footer() {
   const logos = import.meta.env.BASE_URL + 'logos-ead.svg'
   return (
-    <footer className="bg-black text-white py-8 px-6">
+    <footer className="bg-black text-white py-8 px-5 sm:px-6 overflow-hidden">
       <div className="max-w-3xl mx-auto">
-        {/* Title left, logos right */}
-        <div className="flex items-center justify-between gap-4 mb-6">
+        {/* Title + logos: stacked on mobile, inline on sm+ */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mb-6">
           <div className="inline-flex items-baseline gap-1.5">
             <Plane className="w-3.5 h-3.5 text-udem-yellow translate-y-0.5" />
             <span className="font-black text-[7px] tracking-widest uppercase text-white/60">Ticket to Fly</span>
@@ -16,7 +16,7 @@ export default function Footer() {
           <img
             src={logos}
             alt="EAD · CRGS · UDEM"
-            className="h-24 opacity-90"
+            className="h-14 sm:h-24 w-auto max-w-full opacity-90"
           />
         </div>
 
