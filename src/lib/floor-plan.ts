@@ -187,13 +187,13 @@ export const SLOTS: Slot[] = [
 ]
 
 export const SECTION_LABELS = [
-  // Top labels
-  { num: 7,  col: 33.5, row: 0 },
-  { num: 9,  col: 26.5, row: 0 },
-  { num: 11, col: 19.5, row: 0 },
-  { num: 13, col: 12.5, row: 0 },
+  // Top labels — left to right: 15, 13, 11, 9, 7
   { num: 15, col: 5.5,  row: 0 },
-  // Bottom labels
+  { num: 13, col: 12.5, row: 0 },
+  { num: 11, col: 19.5, row: 0 },
+  { num: 9,  col: 26.5, row: 0 },
+  { num: 7,  col: 33.5, row: 0 },
+  // Bottom labels — left to right: 18, 16, 14, 12, 10
   { num: 18, col: 5.5,  row: 26 },
   { num: 16, col: 12.5, row: 26 },
   { num: 14, col: 19.5, row: 26 },

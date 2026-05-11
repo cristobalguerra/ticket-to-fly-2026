@@ -78,18 +78,22 @@ export function autoPositionLabels(
 ): { num: number; col: number; row: number }[] {
   if (tables.length === 0 || nums.length === 0) return []
 
+  // Always assign numbers in descending order from left to right
+  // (top: 15,13,11,9,7; bottom: 18,16,14,12,10)
+  const orderedNums = [...nums].sort((a, b) => b - a)
+
   const sorted = [...tables].sort((a, b) => a.col - b.col)
   const minCol = sorted[0].col
   const maxCol = Math.max(...sorted.map((t) => t.col + t.width))
   const range = maxCol - minCol
-  const step = range / nums.length
+  const step = range / orderedNums.length
 
   // Find row for label placement
   const topRow = Math.min(...tables.map((t) => t.row))
   const bottomRow = Math.max(...tables.map((t) => t.row))
   const labelRow = position === 'top' ? Math.max(0, topRow - 2) : bottomRow + 2
 
-  return nums.map((num, i) => {
+  return orderedNums.map((num, i) => {
     const sectionStart = minCol + i * step
     const sectionEnd = minCol + (i + 1) * step
     // Find tables whose horizontal center falls in this column slice
