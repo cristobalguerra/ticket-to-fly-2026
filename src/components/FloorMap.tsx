@@ -71,11 +71,11 @@ export default function FloorMap({
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto -mx-4 px-4 pb-2">
+      <div className="w-full">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full max-w-[900px] mx-auto block"
-          style={{ minWidth: '720px' }}
+          className="w-full block"
+          preserveAspectRatio="xMidYMid meet"
           xmlns="http://www.w3.org/2000/svg"
         >
           {/* Outside / building background */}

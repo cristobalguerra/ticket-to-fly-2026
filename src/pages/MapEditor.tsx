@@ -244,11 +244,11 @@ export default function MapEditor() {
           </div>
 
           {/* Grid editor */}
-          <div className="bg-white rounded-xl border border-gray-200 p-2 shadow-sm overflow-x-auto">
+          <div className="bg-white rounded-xl border border-gray-200 p-2 shadow-sm">
             <svg
               viewBox={`0 0 ${width} ${height}`}
-              className="block mx-auto select-none"
-              style={{ width: '100%', maxWidth: width, minWidth: 800 }}
+              className="block mx-auto select-none w-full"
+              preserveAspectRatio="xMidYMid meet"
               onMouseDown={(e) => { setDragging(true); handleSvgClick(e) }}
               onMouseUp={() => setDragging(false)}
               onMouseLeave={() => setDragging(false)}
