@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { CAREERS, type Career, type Project } from '../types'
 import { getProjects } from '../lib/projects'
 import { CAREER_COLORS } from '../lib/floor-plan'
@@ -159,9 +160,9 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
     }
   }, [onClose])
 
-  return (
+  return createPortal((
     <div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
       onClick={onClose}
       style={{ animation: 'fadeIn 200ms cubic-bezier(0.23, 1, 0.32, 1)' }}
     >
@@ -213,5 +214,5 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
       `}</style>
     </div>
-  )
+  ), document.body)
 }
