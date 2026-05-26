@@ -96,15 +96,25 @@ export default function Admin() {
             </Link>
           </div>
 
-          {/* Map editor link */}
-          <Link
-            to="/map-editor"
-            className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black mb-6 hover:bg-gray-50"
-            style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-          >
-            <Edit3 className="w-4 h-4" />
-            Editor del Plano
-          </Link>
+          {/* Edit links */}
+          <div className="grid grid-cols-2 gap-2 mb-6">
+            <Link
+              to="/upload"
+              className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
+              style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
+            >
+              <Edit3 className="w-4 h-4" />
+              Editar Proyectos
+            </Link>
+            <Link
+              to="/map-editor"
+              className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
+              style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
+            >
+              <Edit3 className="w-4 h-4" />
+              Editor del Plano
+            </Link>
+          </div>
 
           {/* Floor plan */}
           <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-4">

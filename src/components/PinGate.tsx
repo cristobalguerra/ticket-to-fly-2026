@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Lock } from 'lucide-react'
 
 const DEFAULT_PIN = '2026'
+const ADMIN_PIN = '3000'
 
 interface Props {
   children: React.ReactNode
   label?: string
-  pin?: string
+  /** PIN(s) that unlock this gate. The admin PIN (3000) always works too. */
+  pin?: string | string[]
 }
 
 export default function PinGate({ children, label = 'Acceso restringido', pin: correctPin = DEFAULT_PIN }: Props) {
@@ -17,7 +19,10 @@ export default function PinGate({ children, label = 'Acceso restringido', pin: c
   if (unlocked) return <>{children}</>
 
   function tryUnlock() {
-    if (pin === correctPin) setUnlocked(true)
+    const accepted = Array.isArray(correctPin) ? correctPin : [correctPin]
+    // Admin master PIN always unlocks every gate
+    if (!accepted.includes(ADMIN_PIN)) accepted.push(ADMIN_PIN)
+    if (accepted.includes(pin)) setUnlocked(true)
     else setError(true)
   }
 
