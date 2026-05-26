@@ -7,7 +7,7 @@ import Layout from '../components/Layout'
 import PinGate from '../components/PinGate'
 import FloorMap from '../components/FloorMap'
 import { Link } from 'react-router-dom'
-import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight, MapPin, Edit3 } from 'lucide-react'
+import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight, MapPin, Edit3, Printer } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
@@ -96,8 +96,8 @@ export default function Admin() {
             </Link>
           </div>
 
-          {/* Edit links */}
-          <div className="grid grid-cols-2 gap-2 mb-6">
+          {/* Edit + Distribution links */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
             <Link
               to="/upload"
               className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
@@ -115,6 +115,14 @@ export default function Admin() {
               Editor del Plano
             </Link>
           </div>
+          <Link
+            to="/distribution"
+            className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black mb-6 hover:bg-gray-50"
+            style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
+          >
+            <Printer className="w-4 h-4" />
+            Distribución (imprimible)
+          </Link>
 
           {/* Floor plan */}
           <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-4">

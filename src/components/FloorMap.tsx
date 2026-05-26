@@ -12,6 +12,10 @@ interface Props {
   showLegend?: boolean
   showLabels?: boolean
   highlightOwnSlot?: string
+  /** Show project number inside each slot. The number is the index of
+   * the slot among its career's slots (1-indexed), e.g. LDG slots
+   * show 1..7. Useful for the distribution view / printout. */
+  showSlotNumbers?: boolean
 }
 
 const CELL = 18
@@ -35,6 +39,7 @@ export default function FloorMap({
   showLegend = true,
   showLabels = true,
   highlightOwnSlot,
+  showSlotNumbers = false,
 }: Props) {
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null)
   const [plan, setPlan] = useState<FloorPlanData>(DEFAULT_PLAN)
@@ -186,6 +191,18 @@ export default function FloorMap({
           {/* Slots (colored cells) — render non-selected first, then selected last so it sits on top */}
           {(() => {
             const sortedSlots = [...plan.slots].sort((a) => (a.id === selectedSlotId ? 1 : -1))
+            // Map slot id → display number (1-indexed per career)
+            const numberMap = new Map<string, number>()
+            const byCareer: Record<string, Slot[]> = {}
+            plan.slots.forEach((s) => {
+              if (!byCareer[s.career]) byCareer[s.career] = []
+              byCareer[s.career].push(s)
+            })
+            Object.values(byCareer).forEach((arr) => {
+              arr.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
+              arr.forEach((s, i) => numberMap.set(s.id, i + 1))
+            })
+
             return sortedSlots.map((slot) => {
               const project = projectsBySlotId.get(slot.id)
               const taken = takenSlotIds?.has(slot.id) ?? !!project
@@ -194,6 +211,7 @@ export default function FloorMap({
               const isHovered = hoveredSlot === slot.id
               const isOwnHighlight = highlightOwnSlot === slot.id
               const colors = CAREER_COLORS[slot.career]
+              const slotNumber = numberMap.get(slot.id) ?? 0
 
               const opacity = isFiltered ? 0.4 : 1
               const isInteractive = onSlotClick && !taken && !isFiltered
@@ -273,6 +291,22 @@ export default function FloorMap({
                         strokeLinejoin="round"
                       />
                     </g>
+                  )}
+
+                  {/* Slot number inside the cell (distribution view) */}
+                  {showSlotNumbers && !isSelected && (
+                    <text
+                      x={cx}
+                      y={cy + CELL * 0.28}
+                      textAnchor="middle"
+                      fontSize={CELL * 0.65}
+                      fontWeight="900"
+                      fill={colors.stroke}
+                      fontFamily="Raleway, sans-serif"
+                      pointerEvents="none"
+                    >
+                      {slotNumber}
+                    </text>
                   )}
 
                   {/* Larger transparent tap target for mobile */}
