@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 
-// Avión de papel que navega en profundidad alrededor del título (la
-// trayectoria vive en index.css). La silueta es siempre la misma; lo que
+// Avión de papel que flota anclado sobre el «TO» del título (posición y
+// movimiento viven en index.css). La silueta es siempre la misma; lo que
 // cambia, al azar y a destellos, es cómo está construida: plano, contorno,
 // trama de puntos, mapa de bits, rayado o bloque amarillo.
 
@@ -85,8 +85,7 @@ export default function FlyingPlane() {
   const lines = `${id}-lines`
 
   return (
-    <div className="flight" aria-hidden>
-      <div className="flight-path" data-style={style}>
+    <span className="flight-path" data-style={style} aria-hidden>
         <svg className="flight-plane" viewBox={`0 0 ${W} ${H}`} style={{ opacity: lit ? 1 : 0 }}>
           <defs>
             <pattern id={dots} width="64" height="64" patternUnits="userSpaceOnUse">
@@ -123,7 +122,6 @@ export default function FlyingPlane() {
 
           {style === 'yellow' && <path fill="#FFF500" d={SILHOUETTE} />}
         </svg>
-      </div>
-    </div>
+    </span>
   )
 }

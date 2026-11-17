@@ -50,10 +50,13 @@ export default function Home() {
 
         <h1 className="stagger-in cond board-title relative z-10 mt-8 md:mt-5 -ml-[0.015em] whitespace-nowrap" data-i="1">
           Ticket <br className="md:hidden" />
-          to Fly
+          <span className="flight-anchor">
+            to
+            <FlyingPlane />
+          </span>{' '}
+          Fly
         </h1>
 
-        <FlyingPlane />
         <div className="flight-gap" aria-hidden />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-end gap-10 md:gap-16">
