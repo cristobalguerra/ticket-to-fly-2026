@@ -57,7 +57,7 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
     <Layout showBack>
       <div className="px-4 md:px-8 pb-16">
         <div className="pt-8 md:pt-10 stagger-in flex flex-wrap items-end justify-between gap-x-8 gap-y-3" data-i="0">
-          <h1 className="cond text-[22vw] sm:text-[8.5rem] md:text-[11rem] -ml-[0.03em]">
+          <h1 className="cond text-[22vw] sm:text-[8.5rem] md:text-[11rem] -ml-[0.015em]">
             {archived ? 'Archivo' : 'Proyectos'}
           </h1>
           <div className="code text-[11px] leading-[1.7] pb-2 md:pb-4 md:text-right">
@@ -146,7 +146,7 @@ function FilterButton({
       style={{ transition: `background-color 160ms ${EASE_OUT}, color 160ms ${EASE_OUT}` }}
     >
       {label}
-      <span className={`tabular-nums ${active ? 'text-white/70' : 'text-udem-black/50'}`}>{count}</span>
+      <span className={`tabular-nums ${active ? 'text-white/70' : 'text-udem-black/65'}`}>{count}</span>
     </button>
   )
 }

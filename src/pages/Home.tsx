@@ -5,6 +5,15 @@ import Footer from '../components/Footer'
 import { ARCHIVED, CURRENT } from '../lib/editions'
 import { onVotingStatusChange } from '../lib/settings'
 
+function Arrow() {
+  // Grosor igual al asta de las mayúsculas; altura igual a la altura de caja alta.
+  return (
+    <svg className="board-arrow" viewBox="0 0 60 68.8" fill="none" stroke="currentColor" strokeWidth="15" aria-hidden>
+      <path d="M0 34.4H48M24 9.4l25 25-25 25" />
+    </svg>
+  )
+}
+
 export default function Home() {
   const [votingStatus, setVotingStatus] = useState('')
 
@@ -41,7 +50,7 @@ export default function Home() {
           </p>
         </header>
 
-        <h1 className="stagger-in cond board-title relative z-10 mt-8 md:mt-5 -ml-[0.03em] whitespace-nowrap" data-i="1">
+        <h1 className="stagger-in cond board-title relative z-10 mt-8 md:mt-5 -ml-[0.015em] whitespace-nowrap" data-i="1">
           Ticket <br className="md:hidden" />
           to Fly
         </h1>
@@ -49,28 +58,28 @@ export default function Home() {
         <div className="relative z-10 flex-1 flex flex-col md:flex-row md:items-end gap-10 md:gap-16 mt-8 md:mt-6">
           <nav className="md:flex-1 md:max-w-[62%]" aria-label="Principal">
             <Link to="/vote" className="stagger-in cond board-row" data-primary data-i="2">
-              <span className="board-arrow" aria-hidden>→</span>
+              <Arrow />
               Votar
               {votingStatus && <span className="code board-status">{votingStatus}</span>}
             </Link>
             <Link to="/projects" className="stagger-in cond board-row" data-i="3">
-              <span className="board-arrow" aria-hidden>→</span>
+              <Arrow />
               Proyectos
               <span className="code board-status">{CURRENT.key}</span>
             </Link>
             {ARCHIVED.map((e) => (
               <Link key={e.key} to={`/archivo/${e.key}`} className="stagger-in cond board-row" data-i="4">
-                <span className="board-arrow" aria-hidden>→</span>
+                <Arrow />
                 Archivo
                 <span className="code board-status">{e.key}</span>
               </Link>
             ))}
             <Link to="/info" className="stagger-in cond board-row" data-i="5">
-              <span className="board-arrow" aria-hidden>→</span>
+              <Arrow />
               Información
             </Link>
             <Link to="/upload" className="stagger-in cond board-row" data-i="6">
-              <span className="board-arrow" aria-hidden>→</span>
+              <Arrow />
               Subir proyecto
             </Link>
           </nav>
@@ -81,7 +90,7 @@ export default function Home() {
             {event.day && <p>Inauguración {event.inauguracion}</p>}
             <p>Sexto piso, Centro Roberto Garza Sada</p>
             <p className="mt-4">
-              <Link to="/admin" className="text-white/40 hover:text-white focus-visible:text-white outline-none">
+              <Link to="/admin" className="text-white/60 hover:text-white focus-visible:text-white outline-none">
                 Admin
               </Link>
             </p>
