@@ -119,7 +119,9 @@ export default function Vote() {
         <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
           <XCircle className="w-16 h-16 text-gray-300 mb-4" />
           <h2 className="text-xl font-bold">La votación no está abierta</h2>
-          <p className="text-gray-500 mt-2">Espera a que el administrador abra la votación.</p>
+          <p className="text-gray-500 mt-2">
+            {CURRENT.event.votingSoon ? CURRENT.event.votingSoon.join(' · ') : 'Espera a que el administrador abra la votación.'}
+          </p>
         </div>
       </Layout>
     )

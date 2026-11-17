@@ -104,8 +104,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   margin-left: 0.15em;
   font-size: 11px;
   font-weight: 400;
-  line-height: 1;
+  line-height: 1.35;
   white-space: nowrap;
+  /* Si el estado ocupa dos líneas, la última se asienta en la línea de base. */
+  align-self: last baseline;
 }
 @media (hover: hover) and (pointer: fine) {
   .board-row:hover {

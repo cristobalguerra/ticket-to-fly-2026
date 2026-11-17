@@ -15,14 +15,14 @@ function Arrow() {
 }
 
 export default function Home() {
-  const [votingStatus, setVotingStatus] = useState('')
+  const [votingStatus, setVotingStatus] = useState<string[]>([])
 
   useEffect(
     () =>
       onVotingStatusChange((open) => {
         const opensAt = CURRENT.event.votingOpensAt
         const scheduled = opensAt !== null && Date.now() < opensAt.getTime()
-        setVotingStatus(open && !scheduled ? 'Abierta' : 'Cerrada')
+        setVotingStatus(open && !scheduled ? ['Abierta'] : (CURRENT.event.votingSoon ?? ['Cerrada']))
       }),
     [],
   )
@@ -64,7 +64,13 @@ export default function Home() {
             <Link to="/vote" className="stagger-in cond board-row" data-primary data-i="2">
               <Arrow />
               Votar
-              {votingStatus && <span className="code board-status">{votingStatus}</span>}
+              {votingStatus.length > 0 && (
+                <span className="code board-status">
+                  {votingStatus.map((line) => (
+                    <span key={line} className="block">{line}</span>
+                  ))}
+                </span>
+              )}
             </Link>
             <Link to="/projects" className="stagger-in cond board-row" data-i="3">
               <Arrow />

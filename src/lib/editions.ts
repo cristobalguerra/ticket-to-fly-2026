@@ -9,6 +9,8 @@ export interface EditionEvent {
   day: string | null
   /** Momento en que la votación se desbloquea sola. null = solo la abre Admin */
   votingOpensAt: Date | null
+  /** Aviso mientras la votación sigue cerrada, una línea por elemento. null = «Cerrada» */
+  votingSoon: string[] | null
   montaje: string
   inauguracion: string
   votingOpens: string
@@ -42,6 +44,7 @@ export const EDITIONS: Edition[] = [
     event: {
       day: null,
       votingOpensAt: null,
+      votingSoon: ['Próximamente', '10 de diciembre'],
       montaje: '3:00 PM',
       inauguracion: '5:00 PM',
       votingOpens: '6:30 PM',
@@ -60,6 +63,7 @@ export const EDITIONS: Edition[] = [
     event: {
       day: 'Martes 26 de mayo',
       votingOpensAt: new Date('2026-05-26T18:00:00-06:00'),
+      votingSoon: null,
       montaje: '3:00 PM',
       inauguracion: '5:00 PM',
       votingOpens: '6:30 PM',
