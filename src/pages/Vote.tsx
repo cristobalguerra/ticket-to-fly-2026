@@ -201,7 +201,7 @@ export default function Vote() {
       <Layout showBack>
         <div className="step-enter max-w-lg mx-auto p-4 pb-32">
           <div className="text-center mb-6 mt-4">
-            <span className="text-xs font-bold bg-udem-black text-white px-3 py-1 rounded-full">
+            <span className="text-sm font-bold bg-udem-black text-white px-3 py-1 rounded-full">
               VOTO FINAL
             </span>
             <h1 className="text-xl font-bold mt-3">Mejor Proyecto EAD</h1>
@@ -272,7 +272,7 @@ export default function Vote() {
               )
             })}
           </div>
-          <span className="text-xs font-bold bg-udem-black text-white px-3 py-1 rounded-full">
+          <span className="text-sm font-bold bg-udem-black text-white px-3 py-1 rounded-full">
             {currentCareer.key} — {currentCareerIdx + 1}/6
           </span>
           <h1 className="text-xl font-bold mt-3">{currentCareer.name}</h1>
@@ -361,7 +361,7 @@ function ScheduledScreen({ openAt }: { openAt: Date }) {
 
   return (
     <div className="step-enter flex flex-col items-center justify-center min-h-[70dvh] p-6 text-center">
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-udem-black/5 text-udem-black/60 text-xs font-bold tracking-widest uppercase mb-6">
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-udem-black/5 text-udem-black/60 text-sm font-bold tracking-widest uppercase mb-6">
         <Clock className="w-3 h-3" />
         Votación programada
       </div>
@@ -381,7 +381,7 @@ function ScheduledScreen({ openAt }: { openAt: Date }) {
         <CountdownCell value={seconds} label="Seg" />
       </div>
 
-      <p className="text-xs text-udem-black/40 max-w-sm leading-relaxed">
+      <p className="text-sm text-udem-black/40 max-w-sm leading-relaxed">
         Mientras tanto, puedes revisar los proyectos para emitir un voto informado el día del evento.
       </p>
       <a
@@ -402,7 +402,7 @@ function CountdownCell({ value, label }: { value: number; label: string }) {
       <div className="text-4xl sm:text-5xl font-black tabular-nums text-udem-black leading-none">
         {display}
       </div>
-      <div className="text-[10px] sm:text-xs uppercase tracking-widest text-udem-black/40 font-bold mt-1.5">
+      <div className="text-[13px] sm:text-sm uppercase tracking-widest text-udem-black/40 font-bold mt-1.5">
         {label}
       </div>
     </div>

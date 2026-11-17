@@ -32,7 +32,7 @@ export default function ProjectCard({ project, selected, onClick, showCareer }: 
         )}
       </div>
       <div className="p-4">
-        {showCareer && <p className="code text-[11px] text-udem-black/60 mb-2">{project.career}</p>}
+        {showCareer && <p className="code text-[13px] md:text-sm text-udem-black/60 mb-2">{project.career}</p>}
         <h3 className="font-bold text-lg leading-[1.15]">{project.projectName}</h3>
         <p className="text-sm text-udem-black/65 mt-1.5">{project.teamName}</p>
         {project.description && (

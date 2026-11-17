@@ -40,8 +40,8 @@ export default function Home() {
           className="absolute top-0 right-0 z-10 h-12 md:h-16 w-auto"
         />
 
-        <header className="stagger-in relative z-10 pr-28 md:pr-36" data-i="0">
-          <p className="code text-[11px] leading-[1.5] text-white/70">
+        <header className="stagger-in relative z-10 pr-24 md:pr-36" data-i="0">
+          <p className="code text-xs md:text-[15px] leading-[1.5] text-white/70">
             Escuela de Arte y Diseño
             <br />
             Proyectos de Evaluación Final
@@ -101,7 +101,7 @@ export default function Home() {
             </Link>
           </nav>
 
-          <div className="stagger-in code text-[11px] leading-[1.7] text-white/70 md:text-right md:ml-auto" data-i="7">
+          <div className="stagger-in code text-[13px] md:text-[15px] leading-[1.7] text-white/70 md:text-right md:ml-auto" data-i="7">
             <p className="text-udem-yellow">{CURRENT.label}</p>
             {event.day && <p>{event.day}</p>}
             {event.day && <p>Inauguración {event.inauguracion}</p>}

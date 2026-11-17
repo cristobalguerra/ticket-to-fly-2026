@@ -245,7 +245,7 @@ export default function Upload() {
                   <MapPin className="inline w-4 h-4 mb-0.5 mr-1" />
                   Lugar en el plano
                 </label>
-                <span className="text-xs text-gray-400 tabular-nums">
+                <span className="text-sm text-gray-400 tabular-nums">
                   {careerSlotsTaken}/{careerSlotsTotal} ocupados
                 </span>
               </div>
@@ -256,13 +256,13 @@ export default function Upload() {
                     <AlertCircle className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-orange-800">Carrera llena</p>
-                      <p className="text-xs text-orange-700 mt-0.5">
+                      <p className="text-sm text-orange-700 mt-0.5">
                         Todos los lugares para esta carrera están ocupados. Puedes registrar el proyecto sin lugar y el admin lo asignará después.
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500 mb-3 text-center">
+                  <p className="text-sm text-gray-500 mb-3 text-center">
                     {slotId
                       ? <>Lugar seleccionado: <strong className="text-udem-black">{slotId}</strong></>
                       : 'Toca un lugar disponible en el plano para asignarlo'}
@@ -283,7 +283,7 @@ export default function Upload() {
                   <button
                     type="button"
                     onClick={() => setSlotId(null)}
-                    className="mt-2 text-xs text-gray-500 hover:text-udem-black flex items-center gap-1 mx-auto"
+                    className="mt-2 text-sm text-gray-500 hover:text-udem-black flex items-center gap-1 mx-auto"
                   >
                     <X className="w-3 h-3" /> Quitar lugar
                   </button>
@@ -332,15 +332,15 @@ export default function Upload() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-udem-black">{p.career}</span>
+                      <span className="text-sm font-bold text-udem-black">{p.career}</span>
                       {p.slotId && (
-                        <span className="text-[10px] font-semibold text-udem-black/60 bg-gray-100 px-1.5 py-0.5 rounded tabular-nums flex items-center gap-0.5">
+                        <span className="text-[13px] font-semibold text-udem-black/60 bg-gray-100 px-1.5 py-0.5 rounded tabular-nums flex items-center gap-0.5">
                           <MapPin className="w-2.5 h-2.5" /> {p.slotId}
                         </span>
                       )}
                     </div>
                     <p className="font-semibold text-sm truncate">{p.projectName}</p>
-                    <p className="text-xs text-gray-400 truncate">{p.teamName}</p>
+                    <p className="text-sm text-gray-400 truncate">{p.teamName}</p>
                   </div>
                   <button
                     onClick={() => startEditing(p)}

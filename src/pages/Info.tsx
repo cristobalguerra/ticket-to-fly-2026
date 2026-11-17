@@ -3,7 +3,7 @@ import { CURRENT } from '../lib/editions'
 
 const EVENT = CURRENT.event
 
-const LABEL = 'code text-[11px] text-udem-black/70'
+const LABEL = 'code text-[13px] md:text-sm text-udem-black/70'
 const BODY = 'text-[15px] leading-[1.6] text-udem-black/85'
 
 export default function Info() {
@@ -12,7 +12,7 @@ export default function Info() {
       <div className="px-4 md:px-8 pb-16">
         <div className="pt-8 md:pt-10 stagger-in flex flex-wrap items-end justify-between gap-x-8 gap-y-3" data-i="0">
           <h1 className="cond text-[17vw] sm:text-[8.5rem] md:text-[11rem] -ml-[0.015em]">Información</h1>
-          <p className="code text-[11px] leading-[1.7] pb-2 md:pb-4">{CURRENT.label}</p>
+          <p className="code text-[13px] md:text-sm leading-[1.7] pb-2 md:pb-4">{CURRENT.label}</p>
         </div>
 
         <div className="max-w-3xl mt-8 md:mt-12 space-y-4">
@@ -74,7 +74,7 @@ export default function Info() {
             </section>
 
             <section className="stagger-in bg-udem-black text-white p-5 md:p-7" data-i="5">
-              <h2 className="code text-[11px] text-udem-yellow">No se permite</h2>
+              <h2 className="code text-[13px] md:text-sm text-udem-yellow">No se permite</h2>
               <ul className="text-[15px] leading-[1.6] text-white/90 mt-4 space-y-1.5">
                 <li>Invadir mesas no habilitadas o de otros proyectos</li>
                 <li>Pantallas superiores a laptops o iPads</li>
@@ -131,11 +131,11 @@ export default function Info() {
             <div className="flex gap-10 mt-7">
               <div>
                 <p className="cond text-5xl md:text-6xl tabular-nums text-udem-yellow">{EVENT.votingOpens}</p>
-                <p className="code text-[11px] text-white/70 mt-3">Abre</p>
+                <p className="code text-[13px] md:text-sm text-white/70 mt-3">Abre</p>
               </div>
               <div>
                 <p className="cond text-5xl md:text-6xl tabular-nums">{EVENT.votingCloses}</p>
-                <p className="code text-[11px] text-white/70 mt-3">Cierra</p>
+                <p className="code text-[13px] md:text-sm text-white/70 mt-3">Cierra</p>
               </div>
             </div>
             <p className="text-[15px] leading-[1.6] text-white/90 max-w-[62ch] mt-7">
@@ -162,7 +162,7 @@ export default function Info() {
 function Detail({ label, value, highlight, wide }: { label: string; value: string; highlight?: boolean; wide?: boolean }) {
   return (
     <div className={wide ? 'sm:col-span-2' : undefined}>
-      <dt className="code text-[11px] text-udem-black/70">
+      <dt className="code text-[13px] md:text-sm text-udem-black/70">
         <span className={highlight ? 'bg-udem-yellow text-udem-black px-1.5 py-0.5 -ml-1.5' : undefined}>{label}</span>
       </dt>
       <dd className="font-bold text-lg leading-snug mt-1.5">{value}</dd>

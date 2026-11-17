@@ -60,7 +60,7 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
           <h1 className="cond text-[22vw] sm:text-[8.5rem] md:text-[11rem] -ml-[0.015em]">
             {archived ? 'Archivo' : 'Proyectos'}
           </h1>
-          <div className="code text-[11px] leading-[1.7] pb-2 md:pb-4 md:text-right">
+          <div className="code text-[13px] md:text-sm leading-[1.7] pb-2 md:pb-4 md:text-right">
             <p>{edition.label}</p>
             {archived && edition.event.day && <p className="text-udem-black/60">{edition.event.day}</p>}
             {archived && ARCHIVED.length > 1 && (
@@ -77,7 +77,7 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
 
         {!loading && projects.length > 0 && (
           <div
-            className="stagger-in flex flex-wrap gap-x-1 gap-y-1 mt-6 mb-6 sticky top-12 bg-paper py-3 z-20 -mx-4 px-4 md:-mx-8 md:px-8"
+            className="stagger-in flex flex-wrap gap-x-1 gap-y-1 mt-6 mb-6 sticky top-14 bg-paper py-3 z-20 -mx-4 px-4 md:-mx-8 md:px-8"
             data-i="1"
           >
             <FilterButton active={filter === 'all'} onClick={() => setFilter('all')} label="Todos" count={counts.all} />
@@ -106,7 +106,7 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
             {!archived && ARCHIVED[0] && (
               <Link
                 to={`/archivo/${ARCHIVED[0].key}`}
-                className="code text-[11px] inline-block mt-5 bg-udem-black text-white px-4 py-3 hover:bg-udem-yellow hover:text-black"
+                className="code text-[13px] md:text-sm inline-block mt-5 bg-udem-black text-white px-4 py-3 hover:bg-udem-yellow hover:text-black"
                 style={{ transition: `background-color 160ms ${EASE_OUT}, color 160ms ${EASE_OUT}` }}
               >
                 → Archivo {ARCHIVED[0].label}
@@ -140,7 +140,7 @@ function FilterButton({
       onClick={onClick}
       title={title}
       aria-pressed={active}
-      className={`code text-[11px] px-3 py-2 flex items-baseline gap-2 ${
+      className={`code text-[13px] md:text-sm px-3 py-2 flex items-baseline gap-2 ${
         active ? 'bg-udem-black text-udem-yellow' : 'text-udem-black hover:bg-udem-black/10'
       }`}
       style={{ transition: `background-color 160ms ${EASE_OUT}, color 160ms ${EASE_OUT}` }}
@@ -153,7 +153,7 @@ function FilterButton({
 
 function Meta({ project, showSlot }: { project: Project; showSlot: boolean }) {
   return (
-    <p className="code text-[11px] text-udem-black/60 flex gap-3">
+    <p className="code text-[13px] md:text-sm text-udem-black/60 flex gap-3">
       <span>{project.career}</span>
       {showSlot && project.slotId && <span>Lugar {project.slotId}</span>}
     </p>
