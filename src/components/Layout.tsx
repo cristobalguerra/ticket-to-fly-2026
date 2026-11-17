@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Footer from './Footer'
+import { CURRENT } from '../lib/editions'
 
 interface Props {
   children: React.ReactNode
@@ -10,22 +11,21 @@ interface Props {
 export default function Layout({ children, showBack, showFooter = true }: Props) {
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="bg-udem-black text-white px-4 py-2 flex items-center gap-3 sticky top-0 z-30">
+      <header className="bg-board text-white px-4 md:px-8 h-12 flex items-center gap-3 sticky top-0 z-30">
         {showBack && (
           <Link
             to="/"
-            className="text-white/70 font-bold text-xs hover:text-white"
-            style={{ transition: 'color 180ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+            className="code text-[11px] text-white/70 hover:text-udem-yellow focus-visible:text-udem-yellow outline-none"
+            style={{ transition: 'color 180ms cubic-bezier(0.23, 1, 0.32, 1)' }}
           >
-            &larr; Inicio
+            ← Inicio
           </Link>
         )}
-        <div className="flex items-baseline gap-1.5 ml-auto">
-          <span className="font-black text-[7px] tracking-widest uppercase text-white/60">Ticket to Fly</span>
-          <span className="text-white/40 text-[7px] font-light tracking-widest">2026</span>
-        </div>
+        <p className="code text-[11px] text-white/70 ml-auto">
+          Ticket to Fly <span className="text-udem-yellow">{CURRENT.key}</span>
+        </p>
       </header>
-      <main className="flex-1 bg-gradient-to-b from-[#f0fdf4] to-[#ecfeff] page-enter">{children}</main>
+      <main className="flex-1 bg-paper page-enter">{children}</main>
       {showFooter && <Footer />}
     </div>
   )

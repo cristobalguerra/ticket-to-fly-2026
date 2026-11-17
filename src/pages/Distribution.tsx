@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CAREERS, type Project } from '../types'
 import { getProjects } from '../lib/projects'
+import { CURRENT } from '../lib/editions'
 import { CAREER_COLORS, SLOTS } from '../lib/floor-plan'
 import Layout from '../components/Layout'
 import PinGate from '../components/PinGate'
@@ -79,7 +80,7 @@ export default function Distribution() {
             </div>
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-udem-black text-white font-bold text-sm shadow-lg"
+              className="flex items-center gap-2 px-4 py-2.5 bg-udem-black text-white font-bold text-sm shadow-lg"
               style={{ transition: `transform 160ms ${EASE_OUT}` }}
             >
               <Printer className="w-4 h-4" />
@@ -89,12 +90,12 @@ export default function Distribution() {
 
           {/* Print-only title */}
           <div className="hidden print-only mb-4">
-            <h1 className="text-2xl font-black">Ticket to Fly 2026 — Distribución del Evento</h1>
-            <p className="text-xs text-gray-600 mt-1">26 de Mayo · 6to piso, Centro Roberto Garza Sada · UDEM</p>
+            <h1 className="text-2xl font-black">Ticket to Fly {CURRENT.label} — Distribución del Evento</h1>
+            <p className="text-xs text-gray-600 mt-1">{CURRENT.event.day ? `${CURRENT.event.day} · ` : ''}6to piso, Centro Roberto Garza Sada · UDEM</p>
           </div>
 
           {/* Map */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 print-card">
+          <div className="bg-white border border-gray-100 p-4 mb-6 print-card">
             <h2 className="font-bold text-sm flex items-center gap-2 mb-3">
               <MapPin className="w-4 h-4" /> Plano
               <span className="text-gray-400 text-xs ml-auto tabular-nums">
@@ -114,7 +115,7 @@ export default function Distribution() {
             {projectsByCareer.map((c) => {
               const colors = CAREER_COLORS[c.key]
               return (
-                <section key={c.key} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 print-card break-inside-avoid">
+                <section key={c.key} className="bg-white border border-gray-100 p-4 print-card break-inside-avoid">
                   <header className="flex items-center gap-2 mb-3">
                     <span
                       className="text-[10px] font-black px-2 py-0.5 rounded-full"

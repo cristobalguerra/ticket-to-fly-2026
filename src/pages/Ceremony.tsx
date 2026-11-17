@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { CAREERS, type Project } from '../types'
 import { getProjects } from '../lib/projects'
+import { CURRENT } from '../lib/editions'
 import { getVotes, tallyVotes } from '../lib/votes'
 import PinGate from '../components/PinGate'
 import confetti from 'canvas-confetti'
@@ -212,7 +213,7 @@ export default function Ceremony() {
             <h1 className="text-5xl md:text-8xl font-black ceremony-title text-udem-yellow tracking-tight">
               Ticket to Fly
             </h1>
-            <p className="text-xl text-white/30 mt-4 font-light tracking-[0.3em] uppercase">2026</p>
+            <p className="text-xl text-white/30 mt-4 font-light tracking-[0.3em] uppercase">{CURRENT.label}</p>
             <p className="text-white/20 mt-16 text-xs flex items-center gap-2 justify-center tracking-wider">
               Toca para comenzar <ChevronRight className="w-3 h-3 arrow-nudge" />
             </p>

@@ -3,6 +3,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Career, Vote } from '../types'
+import { CURRENT, inEdition, type Edition } from './editions'
 
 const col = collection(db, 'votes')
 
@@ -10,11 +11,15 @@ function normalize(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
+// Un profesor que votó en una edición pasada puede votar en la actual.
 export async function hasAlreadyVoted(voterName: string): Promise<boolean> {
   const snap = await getDocs(
     query(col, where('voterName', '==', normalize(voterName))),
   )
-  return !snap.empty
+  return snap.docs.some((d) => {
+    const at: Date | undefined = d.data().createdAt?.toDate?.()
+    return at ? inEdition(at, CURRENT) : true
+  })
 }
 
 export async function submitAllVotes(
@@ -36,6 +41,7 @@ export async function submitAllVotes(
         career,
         projectId,
         voteType: 'career',
+        edition: CURRENT.key,
         createdAt: serverTimestamp(),
       }),
     )
@@ -47,6 +53,7 @@ export async function submitAllVotes(
       career: 'general',
       projectId: generalVoteProjectId,
       voteType: 'general',
+      edition: CURRENT.key,
       createdAt: serverTimestamp(),
     }),
   )
@@ -54,8 +61,14 @@ export async function submitAllVotes(
   await Promise.all(promises)
 }
 
-export async function getVotes(): Promise<Vote[]> {
-  const snap = await getDocs(col)
+function editionQuery(edition: Edition) {
+  const bounds = [where('createdAt', '>=', edition.from)]
+  if (edition.to) bounds.push(where('createdAt', '<', edition.to))
+  return query(col, ...bounds)
+}
+
+export async function getVotes(edition: Edition = CURRENT): Promise<Vote[]> {
+  const snap = await getDocs(editionQuery(edition))
   return snap.docs.map((d) => ({
     id: d.id,
     ...d.data(),
@@ -63,11 +76,15 @@ export async function getVotes(): Promise<Vote[]> {
   })) as Vote[]
 }
 
+// Borra únicamente los votos de la edición en curso. Los de ediciones
+// anteriores quedan intactos.
 export async function resetAllVotes() {
-  const snap = await getDocs(col)
-  const batch = writeBatch(db)
-  snap.docs.forEach((d) => batch.delete(d.ref))
-  await batch.commit()
+  const snap = await getDocs(editionQuery(CURRENT))
+  for (let i = 0; i < snap.docs.length; i += 400) {
+    const batch = writeBatch(db)
+    snap.docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref))
+    await batch.commit()
+  }
 }
 
 export function tallyVotes(votes: Vote[], _projectsMap: Map<string, { projectName: string; career: Career }>) {

@@ -1,36 +1,39 @@
 import Layout from '../components/Layout'
+import { CURRENT } from '../lib/editions'
 import { Calendar, Clock, MapPin, Trophy, Check, X, Ruler, Vote, Mail, Info as InfoIcon } from 'lucide-react'
+
+const EVENT = CURRENT.event
 
 export default function Info() {
   return (
     <Layout showBack>
       <div className="max-w-2xl mx-auto p-4 pb-12">
         <div className="mt-4 mb-6 stagger-in" data-i="0">
-          <h1 className="text-3xl font-black tracking-tight">Ticket to Fly PR26</h1>
+          <h1 className="text-3xl font-black tracking-tight">Ticket to Fly {CURRENT.key}</h1>
           <p className="text-udem-black/60 text-sm mt-2">
             Exposición de proyectos de Evaluación Final de los alumnos de la Escuela de Arte y Diseño del Centro Roberto Garza Sada de la Universidad de Monterrey.
           </p>
         </div>
 
         {/* Event details card */}
-        <div className="stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6" data-i="1">
+        <div className="stagger-in bg-white border border-gray-100 p-5 mb-6" data-i="1">
           <h2 className="text-xs font-bold uppercase tracking-wider text-udem-black/40 mb-4">Detalles del Evento</h2>
           <div className="space-y-3">
-            <Detail icon={<Calendar className="w-4 h-4" />} label="Día" value="Martes 26 de Mayo" />
-            <Detail icon={<Clock className="w-4 h-4" />} label="Montaje" value="3:00 PM" highlight />
-            <Detail icon={<Clock className="w-4 h-4" />} label="Inauguración" value="5:00 PM" />
-            <Detail icon={<MapPin className="w-4 h-4" />} label="Lugar Exposición" value="6to piso del Centro Roberto Garza Sada Campus UDEM" />
-            <Detail icon={<Trophy className="w-4 h-4" />} label="Lugar Premiación" value="Aula Crítica" highlight />
+            {EVENT.day && <Detail icon={<Calendar className="w-4 h-4" />} label="Día" value={EVENT.day} />}
+            <Detail icon={<Clock className="w-4 h-4" />} label="Montaje" value={EVENT.montaje} highlight />
+            <Detail icon={<Clock className="w-4 h-4" />} label="Inauguración" value={EVENT.inauguracion} />
+            <Detail icon={<MapPin className="w-4 h-4" />} label="Lugar Exposición" value={EVENT.place} />
+            <Detail icon={<Trophy className="w-4 h-4" />} label="Lugar Premiación" value={EVENT.awardsPlace} highlight />
           </div>
         </div>
 
         {/* Intro */}
-        <div className="stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6" data-i="2">
+        <div className="stagger-in bg-white border border-gray-100 p-5 mb-6" data-i="2">
           <h2 className="text-xs font-bold uppercase tracking-wider text-udem-black/40 mb-3 flex items-center gap-2">
             <InfoIcon className="w-3.5 h-3.5" /> Sobre el Evento
           </h2>
           <p className="text-sm text-udem-black/75 leading-relaxed">
-            Buscando como cada semestre, la difusión del talento de nuestros alumnos. Como también la seguridad e integridad de maestros y expositores, para la exposición TTF PR26, se seguirán una serie de lineamientos de estandarización que agilizarán y facilitarán la exposición, así como el desplazamiento de los visitantes durante el evento.
+            Buscando como cada semestre, la difusión del talento de nuestros alumnos. Como también la seguridad e integridad de maestros y expositores, para la exposición TTF {CURRENT.key}, se seguirán una serie de lineamientos de estandarización que agilizarán y facilitarán la exposición, así como el desplazamiento de los visitantes durante el evento.
           </p>
           <p className="text-sm text-udem-black/75 leading-relaxed mt-3">
             Se realizó una distribución estandarizada de dimensiones y necesidades por cada carrera, utilizando el mobiliario fijo en las áreas de uso común del 6to piso del CRGS. Los proyectos se distribuirán por programa y se asignarán de manera aleatoria.
@@ -38,7 +41,7 @@ export default function Info() {
         </div>
 
         {/* Instructions for students */}
-        <div className="stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6" data-i="3">
+        <div className="stagger-in bg-white border border-gray-100 p-5 mb-6" data-i="3">
           <h2 className="text-lg font-bold mb-4">Indicaciones para Alumnos</h2>
           <ul className="space-y-3 text-sm text-udem-black/80">
             <Bullet>Se montarán los carteles (se recomiendan dos) sobre las islas de mesas del 6to piso insertándose en la división de las mesas.</Bullet>
@@ -55,7 +58,7 @@ export default function Info() {
 
         {/* What's allowed / not allowed */}
         <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <div className="stagger-in bg-white rounded-2xl border border-green-200 shadow-sm p-5" data-i="4">
+          <div className="stagger-in bg-white border border-green-200 p-5" data-i="4">
             <h3 className="font-bold text-sm flex items-center gap-2 mb-3 text-green-700">
               <Check className="w-4 h-4" /> SÍ se permite
             </h3>
@@ -71,7 +74,7 @@ export default function Info() {
             </ul>
           </div>
 
-          <div className="stagger-in bg-white rounded-2xl border border-red-200 shadow-sm p-5" data-i="5">
+          <div className="stagger-in bg-white border border-red-200 p-5" data-i="5">
             <h3 className="font-bold text-sm flex items-center gap-2 mb-3 text-red-700">
               <X className="w-4 h-4" /> NO se permite
             </h3>
@@ -87,7 +90,7 @@ export default function Info() {
         </div>
 
         {/* Measurements */}
-        <div className="stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6" data-i="6">
+        <div className="stagger-in bg-white border border-gray-100 p-5 mb-6" data-i="6">
           <h2 className="text-xs font-bold uppercase tracking-wider text-udem-black/40 mb-4 flex items-center gap-2">
             <Ruler className="w-3.5 h-3.5" /> Medidas
           </h2>
@@ -107,12 +110,12 @@ export default function Info() {
         </div>
 
         {/* Mounting diagram */}
-        <div className="stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6" data-i="7">
+        <div className="stagger-in bg-white border border-gray-100 p-5 mb-6" data-i="7">
           <h2 className="text-lg font-bold mb-4">Cómo Montar</h2>
           <img
             src={import.meta.env.BASE_URL + 'como-montar.png'}
             alt="Diagrama de montaje: posters sobre foam rígido con soporte triangular, usar solo la mesa frontal"
-            className="w-full rounded-xl"
+            className="w-full"
           />
           <ul className="mt-4 space-y-1.5 text-xs text-udem-black/70">
             <li>• <strong>Posters:</strong> Foam rígido</li>
@@ -123,7 +126,7 @@ export default function Info() {
         </div>
 
         {/* Teacher info */}
-        <div className="stagger-in bg-udem-black text-white rounded-2xl p-5 mb-6" data-i="7">
+        <div className="stagger-in bg-udem-black text-white p-5 mb-6" data-i="7">
           <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
             <Vote className="w-5 h-5 text-udem-yellow" /> Para Docentes
           </h2>
@@ -137,12 +140,12 @@ export default function Info() {
             <div className="flex items-center gap-4 pt-2 text-xs">
               <div>
                 <p className="text-white/40 uppercase tracking-wider">Abre</p>
-                <p className="font-bold tabular-nums text-udem-yellow">6:30 PM</p>
+                <p className="font-bold tabular-nums text-udem-yellow">{EVENT.votingOpens}</p>
               </div>
               <div className="w-px h-8 bg-white/10" />
               <div>
                 <p className="text-white/40 uppercase tracking-wider">Cierra</p>
-                <p className="font-bold tabular-nums">8:30 PM</p>
+                <p className="font-bold tabular-nums">{EVENT.votingCloses}</p>
               </div>
             </div>
             <p className="text-xs text-white/60 pt-2">
@@ -152,7 +155,7 @@ export default function Info() {
         </div>
 
         {/* Pre-event preview */}
-        <div className="stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm p-5" data-i="7">
+        <div className="stagger-in bg-white border border-gray-100 p-5" data-i="7">
           <h3 className="font-bold text-sm flex items-center gap-2 mb-2">
             <Mail className="w-4 h-4" /> Dos días antes
           </h3>

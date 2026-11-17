@@ -3,6 +3,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Project, Career } from '../types'
+import { CURRENT, type Edition } from './editions'
 
 const col = collection(db, 'projects')
 
@@ -50,14 +51,21 @@ export async function addProject(
     description: data.description,
     slotId: data.slotId ?? null,
     coverUrl,
+    edition: CURRENT.key,
     createdAt: serverTimestamp(),
   })
 
+  byCareerCache = null
   return docRef.id
 }
 
-export async function getProjects(): Promise<Project[]> {
-  const snap = await getDocs(query(col, orderBy('createdAt', 'asc')))
+// Los proyectos de cada edición se separan por fecha de creación, sin migrar
+// ni modificar documentos de semestres anteriores.
+export async function getProjects(edition: Edition = CURRENT): Promise<Project[]> {
+  const bounds = [where('createdAt', '>=', edition.from)]
+  if (edition.to) bounds.push(where('createdAt', '<', edition.to))
+
+  const snap = await getDocs(query(col, ...bounds, orderBy('createdAt', 'asc')))
   return snap.docs.map((d) => ({
     id: d.id,
     ...d.data(),
@@ -65,15 +73,17 @@ export async function getProjects(): Promise<Project[]> {
   })) as Project[]
 }
 
-export async function getProjectsByCareer(career: Career): Promise<Project[]> {
-  const snap = await getDocs(
-    query(col, where('career', '==', career)),
-  )
-  return snap.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-    createdAt: d.data().createdAt?.toDate?.() ?? new Date(),
-  })) as Project[]
+// La votación pide los proyectos carrera por carrera; se descarga la edición
+// una sola vez y se reparte en memoria.
+let byCareerCache: { key: string; at: number; promise: Promise<Project[]> } | null = null
+
+export async function getProjectsByCareer(career: Career, edition: Edition = CURRENT): Promise<Project[]> {
+  if (!byCareerCache || byCareerCache.key !== edition.key || Date.now() - byCareerCache.at > 60_000) {
+    const promise = getProjects(edition)
+    promise.catch(() => { byCareerCache = null })
+    byCareerCache = { key: edition.key, at: Date.now(), promise }
+  }
+  return (await byCareerCache.promise).filter((p) => p.career === career)
 }
 
 export async function updateProject(
@@ -86,8 +96,10 @@ export async function updateProject(
     updates.coverUrl = await resizeImage(imageFile)
   }
   await updateDoc(doc(db, 'projects', id), updates)
+  byCareerCache = null
 }
 
 export async function deleteProject(id: string) {
   await deleteDoc(doc(db, 'projects', id))
+  byCareerCache = null
 }

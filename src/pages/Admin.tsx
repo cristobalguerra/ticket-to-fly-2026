@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { CAREERS, type Project, type Vote } from '../types'
 import { getProjects } from '../lib/projects'
+import { CURRENT } from '../lib/editions'
 import { getVotes, resetAllVotes, tallyVotes } from '../lib/votes'
 import { onVotingStatusChange, setVotingOpen } from '../lib/settings'
 import Layout from '../components/Layout'
@@ -38,8 +39,8 @@ export default function Admin() {
   }
 
   async function handleReset() {
-    if (!confirm('¿Borrar TODOS los votos? Esta acción no se puede deshacer.')) return
-    if (!confirm('¿Estás seguro? Se eliminarán todos los votos registrados.')) return
+    if (!confirm(`¿Borrar todos los votos de ${CURRENT.label}? Esta acción no se puede deshacer.`)) return
+    if (!confirm(`¿Estás seguro? Se eliminarán los votos de ${CURRENT.label}. Los de ediciones anteriores no se tocan.`)) return
     await resetAllVotes()
     await loadData()
   }
@@ -75,7 +76,7 @@ export default function Admin() {
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button
               onClick={toggleVoting}
-              className={`flex items-center justify-center gap-2 p-4 rounded-xl font-bold text-sm border-2 ${
+              className={`flex items-center justify-center gap-2 p-4 font-bold text-sm border-2 ${
                 votingOpen
                   ? 'bg-green-100 text-green-800 border-green-300'
                   : 'bg-red-100 text-red-800 border-red-300'
@@ -88,7 +89,7 @@ export default function Admin() {
 
             <Link
               to="/ceremony"
-              className="flex items-center justify-center gap-2 p-4 rounded-xl font-bold text-sm bg-ead-indigo text-white hover:brightness-110"
+              className="flex items-center justify-center gap-2 p-4 font-bold text-sm bg-ead-indigo text-white hover:brightness-110"
               style={{ transition: `filter 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
             >
               <Presentation className="w-5 h-5" />
@@ -100,7 +101,7 @@ export default function Admin() {
           <div className="grid grid-cols-2 gap-2 mb-3">
             <Link
               to="/upload"
-              className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
+              className="flex items-center justify-center gap-2 p-3 font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
               style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
             >
               <Edit3 className="w-4 h-4" />
@@ -108,7 +109,7 @@ export default function Admin() {
             </Link>
             <Link
               to="/map-editor"
-              className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
+              className="flex items-center justify-center gap-2 p-3 font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
               style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
             >
               <Edit3 className="w-4 h-4" />
@@ -117,7 +118,7 @@ export default function Admin() {
           </div>
           <Link
             to="/distribution"
-            className="flex items-center justify-center gap-2 p-3 rounded-xl font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black mb-6 hover:bg-gray-50"
+            className="flex items-center justify-center gap-2 p-3 font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black mb-6 hover:bg-gray-50"
             style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
           >
             <Printer className="w-4 h-4" />
@@ -125,7 +126,7 @@ export default function Admin() {
           </Link>
 
           {/* Floor plan */}
-          <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+          <div className="mb-6 bg-white border border-gray-100 p-4">
             <h3 className="font-bold text-sm flex items-center gap-2 mb-3">
               <MapPin className="w-4 h-4" />
               Plano del Evento
@@ -138,12 +139,12 @@ export default function Admin() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <div className="bg-white p-4 border border-gray-100 text-center">
               <Users className="w-6 h-6 text-ead-teal mx-auto mb-1" />
               <p className="text-2xl font-bold tabular-nums">{totalVoters}</p>
               <p className="text-xs text-gray-500">Profesores votaron</p>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <div className="bg-white p-4 border border-gray-100 text-center">
               <Trophy className="w-6 h-6 text-udem-yellow mx-auto mb-1" />
               <p className="text-2xl font-bold tabular-nums">{projects.length}</p>
               <p className="text-xs text-gray-500">Proyectos registrados</p>
@@ -168,7 +169,7 @@ export default function Admin() {
                       {c.name}
                       <span className="text-gray-400 text-xs ml-auto tabular-nums">{totalCareerVotes} votos</span>
                     </h3>
-                    <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                    <div className="bg-white overflow-hidden border border-gray-100 shadow-sm">
                       {careerProjects.length === 0 ? (
                         <p className="p-3 text-gray-400 text-sm">Sin proyectos</p>
                       ) : (
@@ -217,7 +218,7 @@ export default function Admin() {
                   <span className="bg-ead-indigo text-white px-2 py-0.5 rounded text-xs">GENERAL</span>
                   Mejor Proyecto EAD
                 </h3>
-                <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                <div className="bg-white overflow-hidden border border-gray-100 shadow-sm">
                   {Object.keys(generalTally).length === 0 ? (
                     <p className="p-3 text-gray-400 text-sm">Sin votos aún</p>
                   ) : (
@@ -260,15 +261,15 @@ export default function Admin() {
           )}
 
           {/* Danger zone */}
-          <div className="mt-8 border-2 border-red-200 rounded-xl p-4">
+          <div className="mt-8 border-2 border-red-200 p-4">
             <h3 className="font-bold text-red-600 text-sm mb-3">Zona de peligro</h3>
             <button
               onClick={handleReset}
-              className="flex items-center justify-center gap-2 w-full bg-red-100 text-red-700 font-bold py-3 rounded-xl hover:bg-red-200 text-sm"
+              className="flex items-center justify-center gap-2 w-full bg-red-100 text-red-700 font-bold py-3 hover:bg-red-200 text-sm"
               style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
             >
               <Trash2 className="w-4 h-4" />
-              Resetear todos los votos
+              Resetear votos de {CURRENT.label}
             </button>
           </div>
         </div>

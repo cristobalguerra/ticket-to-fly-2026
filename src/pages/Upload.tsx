@@ -141,7 +141,7 @@ export default function Upload() {
     await loadProjects()
   }
 
-  const inputBase = 'w-full border-2 border-gray-200 rounded-xl p-3 outline-none bg-white'
+  const inputBase = 'w-full border-2 border-gray-200 p-3 outline-none bg-white'
   const inputStyle = { transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }
 
   return (
@@ -223,11 +223,11 @@ export default function Upload() {
                 Imagen de Cover {editingId && <span className="text-gray-400 font-normal">(opcional)</span>}
               </label>
               <label
-                className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-udem-black/30 hover:bg-gray-50/50"
+                className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 p-6 cursor-pointer hover:border-udem-black/30 hover:bg-gray-50/50"
                 style={{ transition: `border-color 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
               >
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="max-h-48 rounded-lg object-contain" />
+                  <img src={imagePreview} alt="Preview" className="max-h-48 object-contain" />
                 ) : (
                   <>
                     <ImagePlus className="w-10 h-10 text-gray-300 mb-2" />
@@ -250,9 +250,9 @@ export default function Upload() {
                 </span>
               </div>
 
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-3" style={inputStyle}>
+              <div className="bg-white border-2 border-gray-200 p-3" style={inputStyle}>
                 {careerFull && !slotId ? (
-                  <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200">
                     <AlertCircle className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-orange-800">Carrera llena</p>
@@ -304,7 +304,7 @@ export default function Upload() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-udem-black text-white font-bold py-3 rounded-xl shadow-lg disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-udem-black text-white font-bold py-3 disabled:opacity-40 flex items-center justify-center gap-2"
               style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
@@ -321,14 +321,14 @@ export default function Upload() {
               {projects.map((p, i) => (
                 <div
                   key={p.id}
-                  className={`stagger-in flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border ${
+                  className={`stagger-in flex items-center gap-3 bg-white p-3 border ${
                     editingId === p.id ? 'border-udem-black' : 'border-gray-100'
                   }`}
                   style={{ transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }}
                   data-i={Math.min(i, 7)}
                 >
                   {p.coverUrl && (
-                    <img src={p.coverUrl} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                    <img src={p.coverUrl} alt="" className="w-14 h-14 object-cover shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

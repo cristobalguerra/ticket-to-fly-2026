@@ -2,10 +2,14 @@
 
 @theme {
   --color-udem-yellow: #FFF500;
-  --color-udem-black: #333333;
+  --color-udem-black: #111111;
+  --color-board: #0C0C0C;
+  --color-paper: #F2F0EA;
+  --color-signal: #FF4F00;
   --color-ead-teal: #00646c;
   --color-ead-indigo: #363363;
-  --font-family-display: 'Raleway', sans-serif;
+  --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-mono: 'Martian Mono', ui-monospace, monospace;
 
   /* Custom easing curves — stronger than CSS defaults */
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
@@ -18,12 +22,28 @@ html, body, #root {
 }
 
 body {
-  font-family: var(--font-family-display);
-  background-color: #fafafa;
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
   color: var(--color-udem-black);
   margin: 0;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* ── Tipografía de tablero ──
+   Archivo en su ancho mínimo para títulos; Martian Mono para códigos y estados. */
+.cond {
+  font-stretch: 62%;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.82;
+}
+.code {
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 /* ── Press feedback (universal) ── */
@@ -43,45 +63,56 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.08);
 }
 
-/* ── Home: Spring gradient ── */
+/* ── Home: tablero de salidas ── */
 
-.home-bg {
-  background: linear-gradient(160deg, #BEF264 0%, #6EE7B7 25%, #34D399 50%, #2DD4BF 75%, #06B6D4 100%);
+.board {
+  background: var(--color-board);
+  color: #fff;
   position: relative;
   overflow: hidden;
 }
 
-.home-bg::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: -10%;
-  right: -10%;
-  height: 35%;
-  background: radial-gradient(ellipse at 50% 100%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 40%, transparent 70%);
-  filter: blur(30px);
-  pointer-events: none;
-}
-
-/* ── Outline text ── */
-.text-outline {
-  color: white;
-  -webkit-text-stroke: 2px #333;
-  text-shadow:
-    3px 3px 0 #333,
-    -1px -1px 0 #333,
-    1px -1px 0 #333,
-    -1px 1px 0 #333;
+.board-title {
+  font-size: 35.5vw;
 }
 @media (min-width: 768px) {
-  .text-outline {
-    -webkit-text-stroke: 3px #333;
-    text-shadow:
-      4px 4px 0 #333,
-      -1px -1px 0 #333,
-      1px -1px 0 #333,
-      -1px 1px 0 #333;
+  .board-title { font-size: 17.6vw; }
+}
+
+.board-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35em;
+  width: 100%;
+  padding: 0.06em 0.18em 0.02em;
+  margin-left: -0.18em;
+  font-size: clamp(2.25rem, 5.4vw, 5.25rem);
+  color: #fff;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+.board-row[data-primary] { color: var(--color-udem-yellow); }
+.board-row .board-arrow {
+  display: inline-block;
+  transition: transform 220ms var(--ease-out-strong);
+}
+.board-row .board-status {
+  margin-left: auto;
+  font-size: 11px;
+  line-height: 1;
+  align-self: center;
+  white-space: nowrap;
+}
+@media (hover: hover) and (pointer: fine) {
+  .board-row:hover {
+    background: var(--color-udem-yellow);
+    color: #000;
   }
+  .board-row:hover .board-arrow { transform: translateX(0.12em); }
+}
+.board-row:focus-visible {
+  outline: none;
+  background: var(--color-udem-yellow);
+  color: #000;
 }
 
 /* ── Stagger entrance for lists / hero ── */
@@ -138,9 +169,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 
 .plane-img {
-  width: 240px;
+  width: 200px;
   height: auto;
-  mix-blend-mode: screen;
   animation: planeWobble 4s var(--ease-in-out-strong) infinite;
 }
 
@@ -190,7 +220,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 @media (hover: hover) and (pointer: fine) {
   .project-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
   }
 }
 .project-card:active:not(:disabled) {
@@ -198,7 +227,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 .project-card.selected {
   border-color: var(--color-udem-black);
-  box-shadow: 0 0 0 3px var(--color-udem-black), 0 8px 24px rgba(0,0,0,0.12);
+  background: var(--color-udem-yellow);
   transform: translateY(-3px);
 }
 .project-card.selected:active {

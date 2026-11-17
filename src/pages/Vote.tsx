@@ -3,6 +3,7 @@ import { CAREERS, type Career, type Project } from '../types'
 import { getProjectsByCareer } from '../lib/projects'
 import { hasAlreadyVoted, submitAllVotes } from '../lib/votes'
 import { isVotingOpen } from '../lib/settings'
+import { CURRENT } from '../lib/editions'
 import Layout from '../components/Layout'
 import ProjectCard from '../components/ProjectCard'
 import { Loader2, CheckCircle2, XCircle, ChevronRight, Send, Clock } from 'lucide-react'
@@ -11,8 +12,9 @@ type Step = 'name' | Career | 'general' | 'confirm' | 'done' | 'closed' | 'alrea
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
-// Voting auto-opens at this time (Monterrey, UTC-6)
-const VOTING_OPENS_AT = new Date('2026-05-26T18:00:00-06:00')
+// Si la edición tiene hora de apertura, la votación se desbloquea sola a esa hora.
+// Si no, depende solo del interruptor de Admin.
+const VOTING_OPENS_AT = CURRENT.event.votingOpensAt
 
 export default function Vote() {
   const [step, setStep] = useState<Step>('name')
@@ -25,7 +27,7 @@ export default function Vote() {
   const [currentCareerIdx, setCurrentCareerIdx] = useState(0)
 
   useEffect(() => {
-    if (Date.now() < VOTING_OPENS_AT.getTime()) {
+    if (VOTING_OPENS_AT && Date.now() < VOTING_OPENS_AT.getTime()) {
       setStep('scheduled')
       return
     }
@@ -103,7 +105,7 @@ export default function Vote() {
     return selected
   }
 
-  if (step === 'scheduled') {
+  if (step === 'scheduled' && VOTING_OPENS_AT) {
     return (
       <Layout showBack>
         <ScheduledScreen openAt={VOTING_OPENS_AT} />
@@ -141,7 +143,7 @@ export default function Vote() {
     return (
       <Layout showBack>
         <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
-          <div className="w-20 h-20 bg-udem-yellow rounded-full flex items-center justify-center mb-4 shadow-lg shadow-yellow-500/20">
+          <div className="w-20 h-20 bg-udem-yellow rounded-full flex items-center justify-center mb-4">
             <CheckCircle2 className="w-10 h-10 text-udem-black" />
           </div>
           <h2 className="text-2xl font-bold">¡Gracias, {voterName.split(' ')[0]}!</h2>
@@ -166,7 +168,7 @@ export default function Vote() {
               onChange={(e) => { setVoterName(e.target.value); setError('') }}
               onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
               placeholder="Nombre Completo"
-              className="w-full border-2 border-gray-200 rounded-xl p-4 text-center text-lg outline-none"
+              className="w-full border-2 border-gray-200 p-4 text-center text-lg outline-none"
               style={{ transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }}
               autoFocus
             />
@@ -180,7 +182,7 @@ export default function Vote() {
             <button
               onClick={handleNameSubmit}
               disabled={loading}
-              className="mt-4 w-full bg-udem-black text-white font-bold py-4 rounded-xl shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              className="mt-4 w-full bg-udem-black text-white font-bold py-4 disabled:opacity-50 flex items-center justify-center gap-2"
               style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Comenzar'}
@@ -232,7 +234,7 @@ export default function Vote() {
           <button
             onClick={handleSubmitVotes}
             disabled={loading || !generalVote}
-            className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl shadow-lg disabled:opacity-40 flex items-center justify-center gap-2"
+            className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 disabled:opacity-40 flex items-center justify-center gap-2"
             style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5" /> Enviar Votos</>}
@@ -307,7 +309,7 @@ export default function Vote() {
         <button
           onClick={handleNextCareer}
           disabled={loading || !careerVotes[currentCareer.key]}
-          className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 rounded-xl shadow-lg disabled:opacity-40 flex items-center justify-center gap-2"
+          className="w-full max-w-lg mx-auto bg-udem-black text-white font-bold py-4 disabled:opacity-40 flex items-center justify-center gap-2"
           style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
@@ -340,7 +342,7 @@ function ScheduledScreen({ openAt }: { openAt: Date }) {
         <p className="text-sm text-gray-500 mb-3">La votación ya abrió</p>
         <button
           onClick={() => window.location.reload()}
-          className="bg-udem-black text-white font-bold px-6 py-3 rounded-xl"
+          className="bg-udem-black text-white font-bold px-6 py-3"
         >
           Comenzar a votar
         </button>
@@ -394,7 +396,7 @@ function ScheduledScreen({ openAt }: { openAt: Date }) {
 function CountdownCell({ value, label }: { value: number; label: string }) {
   const display = String(value).padStart(2, '0')
   return (
-    <div className="bg-white rounded-2xl border border-udem-black/10 shadow-sm py-4 px-2">
+    <div className="bg-white border border-udem-black/10 py-4 px-2">
       <div className="text-4xl sm:text-5xl font-black tabular-nums text-udem-black leading-none">
         {display}
       </div>
