@@ -159,62 +159,45 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   to { opacity: 1; transform: translateX(0); filter: blur(0); }
 }
 
-/* ── Flying paper plane ── */
+/* ── Avión de papel ──
+   Recorre la franja vacía entre el título y la navegación: despega abajo a la
+   izquierda, sube con poca pendiente y sale por la derecha. Luego espera fuera
+   de cuadro antes de la siguiente pasada. */
 
-.flying-plane-container {
-  position: fixed;
-  inset: 0;
+.flight {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 5.5rem;
   pointer-events: none;
-  overflow: hidden;
-  z-index: 50;
+}
+@media (min-width: 768px) {
+  .flight { min-height: 9rem; }
 }
 
-.flying-plane {
+.flight-path {
   position: absolute;
-  animation: flyAcross 25s linear infinite;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
-  will-change: transform;
+  left: -40%;
+  bottom: 10%;
+  width: clamp(3.25rem, 6.2vw, 5.75rem);
+  animation: flightPass 26s linear infinite;
 }
 
-.plane-img {
-  width: 200px;
+.flight-plane {
+  display: block;
+  width: 100%;
   height: auto;
-  animation: planeWobble 4s var(--ease-in-out-strong) infinite;
+  animation: flightDrift 5s var(--ease-in-out-strong) infinite;
 }
 
-.plane-trail {
-  position: absolute;
-  right: 55px;
-  top: 55%;
-  width: 140px;
-  height: 2px;
-  transform: translateY(-50%);
-  transform-origin: right center;
-  background: linear-gradient(to left, rgba(255,255,255,0.4), rgba(255,255,255,0.1) 40%, transparent);
-  border-radius: 2px;
-  animation: planeWobble 3s var(--ease-in-out-strong) infinite;
+@keyframes flightPass {
+  0%   { left: -40%; bottom: 10%; }
+  62%  { left: 112%; bottom: 62%; }
+  100% { left: 112%; bottom: 62%; }
 }
 
-@keyframes flyAcross {
-  0% {
-    left: -20%;
-    top: 85%;
-    opacity: 0;
-  }
-  3% { opacity: 1; }
-  97% { opacity: 1; }
-  100% {
-    left: 120%;
-    top: 5%;
-    opacity: 0;
-  }
-}
-
-@keyframes planeWobble {
+@keyframes flightDrift {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-4px) rotate(-1deg); }
-  50% { transform: translateY(0px) rotate(0.5deg); }
-  75% { transform: translateY(-6px) rotate(-0.5deg); }
+  50% { transform: translateY(-5%) rotate(-1.5deg); }
 }
 
 /* ── Project card ── */
@@ -461,9 +444,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .flying-plane,
-  .plane-img,
-  .plane-trail,
+  /* El avión queda quieto, a media franja. */
+  .flight-path {
+    animation: none !important;
+    left: 62%;
+    bottom: 38%;
+  }
+  .flight-plane,
   .ceremony-bg::before,
   .ceremony-bg::after,
   .ceremony-orb-accent,

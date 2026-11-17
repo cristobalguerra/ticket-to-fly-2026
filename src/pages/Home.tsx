@@ -32,8 +32,6 @@ export default function Home() {
   return (
     <>
       <div className="board min-h-dvh flex flex-col px-5 md:px-8 pt-5 md:pt-7 pb-6">
-        <FlyingPlane />
-
         <img
           src={import.meta.env.BASE_URL + 'udem-logo.svg'}
           alt="UDEM"
@@ -55,7 +53,9 @@ export default function Home() {
           to Fly
         </h1>
 
-        <div className="relative z-10 flex-1 flex flex-col md:flex-row md:items-end gap-10 md:gap-16 mt-8 md:mt-6">
+        <FlyingPlane />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end gap-10 md:gap-16">
           <nav className="md:flex-1 md:max-w-[62%]" aria-label="Principal">
             <Link to="/vote" className="stagger-in cond board-row" data-primary data-i="2">
               <Arrow />
