@@ -169,9 +169,38 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .flight-gap {
   flex: 1 1 auto;
   min-height: 5.5rem;
+  display: flex;
+  align-items: center;
 }
 @media (min-width: 768px) {
   .flight-gap { min-height: 9rem; }
+}
+
+/* ── Fecha en portada ──
+   Día.mes a la izquierda y hora a la derecha, en la misma línea y con el
+   mismo número de cifras. Archivo en su peso más fino y su ancho mayor: el
+   extremo opuesto del título, que va en el más grueso y más estrecho. */
+.board-date {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-block: 2.25rem;
+  font-weight: 100;
+  font-stretch: 84%;
+  font-size: 16vw;
+  line-height: 0.76;
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums;
+}
+@media (min-width: 768px) {
+  .board-date {
+    margin-block: 2.25rem;
+    font-stretch: 125%;
+    font-size: 9.4vw;
+  }
 }
 
 .flight-anchor {

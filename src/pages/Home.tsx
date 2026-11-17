@@ -57,7 +57,14 @@ export default function Home() {
           Fly
         </h1>
 
-        <div className="flight-gap" aria-hidden />
+        <div className="flight-gap">
+          {event.headline && (
+            <p className="stagger-in board-date" data-i="2" aria-label={event.headline.spoken}>
+              <span aria-hidden>{event.headline.date}</span>
+              <span aria-hidden>{event.headline.time}</span>
+            </p>
+          )}
+        </div>
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-end gap-10 md:gap-16">
           <nav className="md:flex-1 md:max-w-[62%]" aria-label="Principal">
