@@ -103,8 +103,9 @@ export default function Home() {
 
           <div className="stagger-in code text-[13px] md:text-[15px] leading-[1.7] text-white/70 md:text-right md:ml-auto" data-i="7">
             <p className="text-udem-yellow">{CURRENT.label}</p>
-            {event.day && <p>{event.day}</p>}
-            {event.day && <p>Inauguración {event.inauguracion}</p>}
+            {/* Si la fecha ya va en grande bajo el título, no se repite aquí. */}
+            {event.day && !event.headline && <p>{event.day}</p>}
+            {event.day && !event.headline && <p>Inicio {event.inauguracion}</p>}
             <p>Sexto piso, Centro Roberto Garza Sada</p>
             <p className="mt-4">
               <Link to="/admin" className="text-white/60 hover:text-white focus-visible:text-white outline-none">
