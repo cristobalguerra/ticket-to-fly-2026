@@ -210,13 +210,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 .flight-path {
   position: absolute;
-  left: 58%;
-  top: 40%;
+  /* Centro del avión sobre el centro del «TO». */
+  left: 50%;
+  top: 48.7%;
   width: 1.2em;
   pointer-events: none;
   mix-blend-mode: difference;
   transform: translate(-50%, -50%);
-  animation: flightSway 11s var(--ease-in-out-strong) infinite;
+  animation: flightGlide 8s ease-in-out infinite;
 }
 .flight-path[data-style="yellow"] { mix-blend-mode: normal; }
 
@@ -224,19 +225,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   display: block;
   width: 100%;
   height: auto;
-  animation: flightHover 6.5s ease-in-out infinite;
 }
 
-/* Deriva lenta en horizontal y balanceo vertical con periodos distintos,
-   para que el flotar no se sienta en bucle. */
-@keyframes flightSway {
-  0%, 100% { transform: translate(-50%, -50%); }
-  50% { transform: translate(-46%, -53%); }
-}
-
-@keyframes flightHover {
-  0%, 100% { transform: translateY(0) rotate(-3deg); }
-  50% { transform: translateY(-9%) rotate(1.5deg); }
+/* Va y viene solo sobre su propio rumbo: la diagonal que marca la nariz
+   (22.7° sobre la horizontal), pasando por el centro del «TO».
+   Recorre 0.65em del título hacia cada lado. */
+@keyframes flightGlide {
+  0%, 100% { transform: translate(calc(-50% - 0.6em), calc(-50% + 0.251em)); }
+  50%      { transform: translate(calc(-50% + 0.6em), calc(-50% - 0.251em)); }
 }
 
 /* ── Project card ── */
