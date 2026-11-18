@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { CAREERS, type Career, type Project } from '../types'
-import { getProjects } from '../lib/projects'
+import { getProjects, canEdit } from '../lib/projects'
+import { useSession } from '../lib/auth'
 import { ARCHIVED, CURRENT, getEdition, type Edition } from '../lib/editions'
 import Layout from '../components/Layout'
 import CoverPlaceholder from '../components/CoverPlaceholder'
@@ -31,6 +32,8 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
   const [failed, setFailed] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
   const [openProject, setOpenProject] = useState<Project | null>(null)
+  // Si la cuenta puede editar el proyecto abierto, el detalle ofrece «Editar».
+  const session = useSession()
 
   useEffect(() => {
     let alive = true
@@ -126,7 +129,11 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
       </div>
 
       {openProject && (
-        <ProjectModal project={openProject} onClose={() => setOpenProject(null)} />
+        <ProjectModal
+          project={openProject}
+          editable={!archived && canEdit(openProject, session.user?.email, session.admin)}
+          onClose={() => setOpenProject(null)}
+        />
       )}
     </Layout>
   )
@@ -187,7 +194,7 @@ function PreviewCard({ project, onClick }: { project: Project; onClick: () => vo
   )
 }
 
-function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
+function ProjectModal({ project, editable, onClose }: { project: Project; editable: boolean; onClose: () => void }) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', handler)
@@ -236,6 +243,15 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
           <p className="text-udem-black/70 mt-3">{project.teamName}</p>
           {project.description && (
             <p className="text-udem-black/85 mt-6 leading-relaxed max-w-[62ch]">{project.description}</p>
+          )}
+          {editable && (
+            <Link
+              to={`/upload?edit=${project.id}`}
+              className="code text-[13px] md:text-sm inline-block mt-7 bg-udem-black text-white px-5 py-3 hover:bg-udem-yellow hover:text-black focus-visible:bg-udem-yellow focus-visible:text-black outline-none"
+              style={{ transition: `background-color 160ms ${EASE_OUT}, color 160ms ${EASE_OUT}` }}
+            >
+              → Editar este proyecto
+            </Link>
           )}
         </div>
       </div>

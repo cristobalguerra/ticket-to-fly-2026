@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { CAREERS, type Career, type Project } from '../types'
 import { addProject, getProjects, deleteProject, updateProject, parseEditors, canEdit } from '../lib/projects'
 import Layout from '../components/Layout'
 import AuthGate from '../components/AuthGate'
-import { useSession } from '../lib/auth'
-import { Trash2, ImagePlus, Loader2, Pencil, X } from 'lucide-react'
+import { useSession, signOut } from '../lib/auth'
+import { useSearchParams } from 'react-router-dom'
+import { ImagePlus, Loader2 } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
+const LABEL = 'code text-[13px] md:text-sm text-udem-black/70'
+const ACTION =
+  'code text-[13px] md:text-sm bg-udem-black text-white px-5 py-3 hover:bg-udem-yellow hover:text-black focus-visible:bg-udem-yellow focus-visible:text-black outline-none'
+const ACTION_STYLE = { transition: `background-color 160ms ${EASE_OUT}, color 160ms ${EASE_OUT}` }
 
 export default function Upload() {
   // Solo administración puede borrar proyectos. Editar: administración o
@@ -25,7 +30,20 @@ export default function Upload() {
   const [msg, setMsg] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
 
+  const formRef = useRef<HTMLElement>(null)
+  const [params, setParams] = useSearchParams()
+
   useEffect(() => { loadProjects() }, [])
+
+  // Llegada desde el botón «Editar» del detalle de un proyecto: /upload?edit=ID
+  const editParam = params.get('edit')
+  useEffect(() => {
+    if (!editParam || projects.length === 0) return
+    const target = projects.find((p) => p.id === editParam)
+    if (target && canEdit(target, email, admin)) startEditing(target)
+    setParams({}, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editParam, projects, email, admin])
 
   async function loadProjects() {
     const p = await getProjects()
@@ -57,7 +75,7 @@ export default function Upload() {
     setImagePreview(p.coverUrl || null)
     setEditors((p.editors ?? []).join('\n'))
     setMsg('')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   function cancelEditing() {
@@ -124,8 +142,8 @@ export default function Upload() {
     await loadProjects()
   }
 
-  // Los proyectos que esta cuenta puede editar van primero.
-  const sorted = [...projects].sort((x, y) => Number(canEdit(y, email, admin)) - Number(canEdit(x, email, admin)))
+  // Solo se listan los proyectos que esta cuenta puede editar.
+  const mine = projects.filter((p) => canEdit(p, email, admin))
 
   const inputBase = 'w-full border-2 border-gray-200 p-3 outline-none bg-white'
   const inputStyle = { transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }
@@ -133,22 +151,77 @@ export default function Upload() {
   return (
     <AuthGate label="Subir proyecto">
       <Layout showBack>
-        <div className="max-w-2xl mx-auto p-4 pb-8">
-          <div className="flex items-center justify-between mt-4 mb-6">
-            <h1 className="text-2xl font-bold">
-              {editingId ? 'Editar Proyecto' : 'Subir Proyecto'}
-            </h1>
-            <button
-              onClick={cancelEditing}
-              className={`flex items-center gap-1 text-sm text-gray-500 hover:text-udem-black overflow-hidden ${
-                editingId ? 'opacity-100 max-w-[140px]' : 'opacity-0 max-w-0 pointer-events-none'
-              }`}
-              style={{ transition: `opacity 200ms ${EASE_OUT}, max-width 280ms ${EASE_OUT}, color 180ms ${EASE_OUT}` }}
-            >
-              <X className="w-4 h-4 shrink-0" /> Cancelar edición
-            </button>
+        <div className="px-4 md:px-8 pb-20">
+          <div className="pt-8 md:pt-10 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+            <h1 className="cond text-[15vw] sm:text-[7rem] md:text-[9rem] -ml-[0.015em]">Tu proyecto</h1>
+            <p className="code text-[13px] md:text-[15px] leading-[1.7] pb-2 md:pb-4 md:text-right normal-case">
+              <span className="uppercase">{admin ? 'Administración' : 'Sesión'}</span>
+              <br />
+              {email}
+              <br />
+              <button type="button" onClick={() => signOut()} className="uppercase underline underline-offset-4 hover:text-udem-black/60">
+                Cambiar de cuenta
+              </button>
+            </p>
           </div>
 
+          {/* Lo primero: los proyectos que esta cuenta puede editar */}
+          <section className="grid md:grid-cols-12 gap-x-8 gap-y-4 mt-12 md:mt-16">
+            <div className="md:col-span-3">
+              <h2 className={LABEL}>{admin ? 'Todos los proyectos' : 'Proyectos que puedes editar'}</h2>
+              <p className="code text-[13px] text-udem-black/50 mt-1 tabular-nums">{mine.length}</p>
+            </div>
+            <div className="md:col-span-9">
+              {mine.length === 0 ? (
+                <p className="text-base md:text-[17px] leading-[1.6] text-udem-black/85 max-w-[62ch]">
+                  La cuenta <strong className="font-bold">{email}</strong> no está asignada a ningún proyecto. Si tu proyecto ya aparece en Proyectos, pide a coordinación que agregue tu correo; si todavía no existe, créalo abajo.
+                </p>
+              ) : (
+                <ul className="max-w-4xl space-y-1">
+                  {mine.map((p) => (
+                    <li
+                      key={p.id}
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 ${editingId === p.id ? 'bg-udem-yellow' : 'bg-white'}`}
+                    >
+                      {p.coverUrl && <img src={p.coverUrl} alt="" className="w-14 h-14 object-cover shrink-0" />}
+                      <div className="flex-1 min-w-[12rem]">
+                        <p className="code text-[13px] text-udem-black/70">
+                          {p.career}
+                          {!p.coverUrl && <span className="ml-3">Sin imagen</span>}
+                          {!p.description && <span className="ml-3">Sin descripción</span>}
+                        </p>
+                        <p className="font-bold text-base leading-snug mt-0.5">{p.projectName}</p>
+                        <p className="text-sm text-udem-black/65">{p.teamName}</p>
+                      </div>
+                      <button type="button" onClick={() => startEditing(p)} className={ACTION} style={ACTION_STYLE}>
+                        → Editar
+                      </button>
+                      {admin && (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(p)}
+                          className="code text-[13px] underline underline-offset-4 hover:text-red-700 focus-visible:text-red-700 outline-none"
+                        >
+                          Borrar
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+
+          <section ref={formRef} className="grid md:grid-cols-12 gap-x-8 gap-y-4 mt-14 md:mt-20 scroll-mt-20">
+            <div className="md:col-span-3">
+              <h2 className={LABEL}>{editingId ? 'Editando' : 'Proyecto nuevo'}</h2>
+              {editingId && (
+                <button type="button" onClick={cancelEditing} className="code text-[13px] underline underline-offset-4 mt-2">
+                  Cancelar edición
+                </button>
+              )}
+            </div>
+            <div className="md:col-span-9 max-w-2xl">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="stagger-in" data-i="0">
               <label className="block text-sm font-semibold mb-1">Carrera</label>
@@ -262,53 +335,8 @@ export default function Upload() {
             </button>
           </form>
 
-          <div className="mt-10">
-            <h2 className="text-lg font-bold mb-4">
-              Proyectos Cargados <span className="text-gray-400 tabular-nums">({projects.length})</span>
-            </h2>
-            {projects.length === 0 && <p className="text-gray-400 text-sm">No hay proyectos aún.</p>}
-            <div className="space-y-3">
-              {sorted.map((p, i) => (
-                <div
-                  key={p.id}
-                  className={`stagger-in flex items-center gap-3 bg-white p-3 border ${
-                    editingId === p.id ? 'border-udem-black' : 'border-gray-100'
-                  }`}
-                  style={{ transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }}
-                  data-i={Math.min(i, 7)}
-                >
-                  {p.coverUrl && (
-                    <img src={p.coverUrl} alt="" className="w-14 h-14 object-cover shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-udem-black">{p.career}</span>
-                    </div>
-                    <p className="font-semibold text-sm truncate">{p.projectName}</p>
-                    <p className="text-sm text-gray-400 truncate">{p.teamName}</p>
-                  </div>
-                  {canEdit(p, email, admin) && <button
-                    onClick={() => startEditing(p)}
-                    aria-label="Editar"
-                    className="p-2 text-gray-300 hover:text-udem-black shrink-0"
-                    style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>}
-                  {admin && (
-                    <button
-                      onClick={() => handleDelete(p)}
-                      aria-label="Eliminar"
-                      className="p-2 text-gray-300 hover:text-red-500 shrink-0"
-                      style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
             </div>
-          </div>
+          </section>
         </div>
       </Layout>
     </AuthGate>
