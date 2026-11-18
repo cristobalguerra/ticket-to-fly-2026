@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { CAREERS, type Career, type Project } from '../types'
-import { getProjectsByCareer } from '../lib/projects'
+import { getProjects } from '../lib/projects'
+import { useSession, signOut } from '../lib/auth'
+import { SignInPanel } from '../components/AuthGate'
 import { hasAlreadyVoted, submitAllVotes } from '../lib/votes'
 import { isVotingOpen } from '../lib/settings'
 import { CURRENT } from '../lib/editions'
@@ -18,7 +20,9 @@ const VOTING_OPENS_AT = CURRENT.event.votingOpensAt
 
 export default function Vote() {
   const [step, setStep] = useState<Step>('name')
-  const [voterName, setVoterName] = useState('')
+  const session = useSession()
+  const voterName = session.user?.displayName || session.user?.email || ''
+  const [careers, setCareers] = useState(CAREERS)
   const [careerProjects, setCareerProjects] = useState<Record<string, Project[]>>({})
   const [careerVotes, setCareerVotes] = useState<Partial<Record<Career, string>>>({})
   const [generalVote, setGeneralVote] = useState<string | null>(null)
@@ -36,16 +40,22 @@ export default function Vote() {
     })
   }, [])
 
-  async function handleNameSubmit() {
-    if (!voterName.trim()) { setError('Ingresa tu nombre'); return }
+  async function handleStart() {
+    if (!session.user) return
     setLoading(true)
     setError('')
     try {
-      const voted = await hasAlreadyVoted(voterName)
-      if (voted) { setStep('already'); return }
-      await loadCareerProjects(CAREERS[0].key)
+      if (await hasAlreadyVoted(session.user.uid)) { setStep('already'); return }
+      // Solo se vota en las carreras que tienen proyectos en esta edición.
+      const all = await getProjects()
+      const grouped: Record<string, Project[]> = {}
+      all.forEach((p) => { (grouped[p.career] ||= []).push(p) })
+      const active = CAREERS.filter((c) => grouped[c.key]?.length)
+      if (active.length === 0) { setError('Todavía no hay proyectos para votar.'); return }
+      setCareerProjects(grouped)
+      setCareers(active)
       setCurrentCareerIdx(0)
-      setStep(CAREERS[0].key)
+      setStep(active[0].key)
     } catch (err) {
       setError('Error de conexión. Intenta de nuevo.')
       console.error(err)
@@ -54,24 +64,15 @@ export default function Vote() {
     }
   }
 
-  async function loadCareerProjects(career: Career) {
-    if (careerProjects[career]) return
-    const projects = await getProjectsByCareer(career)
-    setCareerProjects((prev) => ({ ...prev, [career]: projects }))
-  }
-
-  async function handleNextCareer() {
-    const currentCareer = CAREERS[currentCareerIdx].key
+  function handleNextCareer() {
+    const currentCareer = careers[currentCareerIdx].key
     if (!careerVotes[currentCareer]) { setError('Selecciona un proyecto'); return }
     setError('')
 
     const nextIdx = currentCareerIdx + 1
-    if (nextIdx < CAREERS.length) {
-      setLoading(true)
-      await loadCareerProjects(CAREERS[nextIdx].key)
+    if (nextIdx < careers.length) {
       setCurrentCareerIdx(nextIdx)
-      setStep(CAREERS[nextIdx].key)
-      setLoading(false)
+      setStep(careers[nextIdx].key)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       setStep('general')
@@ -81,13 +82,19 @@ export default function Vote() {
 
   async function handleSubmitVotes() {
     if (!generalVote) { setError('Selecciona el mejor proyecto general'); return }
+    if (!session.user) { setError('Tu sesión terminó. Vuelve a entrar.'); return }
     setLoading(true)
     setError('')
     try {
-      await submitAllVotes(voterName, careerVotes as Record<Career, string>, generalVote)
+      await submitAllVotes(
+        { uid: session.user.uid, name: voterName, email: session.user.email ?? '' },
+        careerVotes,
+        generalVote,
+      )
       setStep('done')
-    } catch (err: any) {
-      setError(err.message || 'Error al enviar votos')
+    } catch (err) {
+      const denied = (err as { code?: string }).code === 'permission-denied'
+      setError(denied ? 'No se pudo registrar: la votación está cerrada o ya votaste.' : (err as Error).message || 'Error al enviar votos')
     } finally {
       setLoading(false)
     }
@@ -95,7 +102,7 @@ export default function Vote() {
 
   function getSelectedProjects(): Project[] {
     const selected: Project[] = []
-    for (const career of CAREERS) {
+    for (const career of careers) {
       const projectId = careerVotes[career.key]
       if (projectId) {
         const project = careerProjects[career.key]?.find((p) => p.id === projectId)
@@ -134,7 +141,7 @@ export default function Vote() {
           <CheckCircle2 className="w-16 h-16 text-ead-teal mb-4" />
           <h2 className="text-xl font-bold">Ya has votado</h2>
           <p className="text-gray-500 mt-2">
-            El nombre <strong>{voterName}</strong> ya tiene votos registrados.
+            La cuenta <strong>{session.user?.email}</strong> ya tiene votos registrados.
           </p>
         </div>
       </Layout>
@@ -158,38 +165,38 @@ export default function Vote() {
   if (step === 'name') {
     return (
       <Layout showBack>
-        <div className="step-enter flex flex-col items-center justify-center min-h-[60dvh] p-6">
-          <div className="w-full max-w-sm">
-            <h1 className="text-2xl font-bold text-center mb-2">Votación EAD</h1>
-            <p className="text-gray-500 text-center text-sm mb-8">
-              Ingresa tu nombre completo para comenzar
-            </p>
-            <input
-              type="text"
-              value={voterName}
-              onChange={(e) => { setVoterName(e.target.value); setError('') }}
-              onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
-              placeholder="Nombre Completo"
-              className="w-full border-2 border-gray-200 p-4 text-center text-lg outline-none"
-              style={{ transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }}
-              autoFocus
-            />
-            <p
-              aria-live="polite"
-              className={`text-red-500 text-sm text-center overflow-hidden ${error ? 'mt-2 max-h-6 opacity-100' : 'mt-0 max-h-0 opacity-0'}`}
-              style={{ transition: `max-height 220ms ${EASE_OUT}, opacity 180ms ${EASE_OUT}, margin-top 220ms ${EASE_OUT}` }}
-            >
-              {error || ' '}
-            </p>
-            <button
-              onClick={handleNameSubmit}
-              disabled={loading}
-              className="mt-4 w-full bg-udem-black text-white font-bold py-4 disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ transition: `transform 160ms ${EASE_OUT}, opacity 200ms ${EASE_OUT}, background-color 200ms ${EASE_OUT}` }}
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Comenzar'}
-            </button>
-          </div>
+        <div className="step-enter px-4 md:px-8 pt-10 md:pt-14 pb-16 max-w-xl">
+          <h1 className="cond text-6xl md:text-7xl -ml-[0.015em]">Votación</h1>
+          <p className="mt-6 bg-udem-yellow text-udem-black font-bold text-[15px] leading-[1.5] p-4 max-w-[46ch]">
+            Solamente pueden votar profesores. Los proyectos quedarán descalificados si un alumno vota en cualquiera de los proyectos.
+          </p>
+          {session.loading ? (
+            <Loader2 className="w-6 h-6 animate-spin text-udem-black/40 mt-8" />
+          ) : !session.user ? (
+            <SignInPanel />
+          ) : (
+            <div className="mt-8">
+              <p className="text-[15px] leading-[1.6] text-udem-black/85">
+                Vas a votar como <strong className="font-bold">{voterName}</strong>
+                <br />
+                <span className="text-udem-black/65">{session.user.email}</span>
+              </p>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-6">
+                <button
+                  onClick={handleStart}
+                  disabled={loading}
+                  className="code text-[13px] md:text-sm bg-udem-black text-white px-5 py-3.5 hover:bg-udem-yellow hover:text-black disabled:opacity-50 flex items-center gap-2"
+                  style={{ transition: `background-color 160ms ${EASE_OUT}, color 160ms ${EASE_OUT}` }}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : '→ Comenzar'}
+                </button>
+                <button onClick={() => signOut()} className="code text-[13px] md:text-sm underline underline-offset-4">
+                  Cambiar de cuenta
+                </button>
+              </div>
+              <p aria-live="polite" className="text-sm text-red-700 mt-4 min-h-5">{error}</p>
+            </div>
+          )}
         </div>
       </Layout>
     )
@@ -206,7 +213,7 @@ export default function Vote() {
             </span>
             <h1 className="text-xl font-bold mt-3">Mejor Proyecto EAD</h1>
             <p className="text-gray-500 text-sm mt-1">
-              De tus 6 elegidos, selecciona el mejor proyecto de toda la escuela.
+              De tus elegidos, selecciona el mejor proyecto de toda la escuela.
             </p>
           </div>
 
@@ -247,7 +254,7 @@ export default function Vote() {
   }
 
   // Career voting steps
-  const currentCareer = CAREERS[currentCareerIdx]
+  const currentCareer = careers[currentCareerIdx]
   const projects = careerProjects[currentCareer.key] || []
 
   return (
@@ -255,7 +262,7 @@ export default function Vote() {
       <div key={currentCareer.key} className="step-enter max-w-lg mx-auto p-4 pb-32">
         <div className="text-center mb-6 mt-4">
           <div className="flex items-center justify-center gap-2 mb-3">
-            {CAREERS.map((c, i) => {
+            {careers.map((c, i) => {
               const done = i < currentCareerIdx
               const active = i === currentCareerIdx
               return (
@@ -273,7 +280,7 @@ export default function Vote() {
             })}
           </div>
           <span className="text-sm font-bold bg-udem-black text-white px-3 py-1 rounded-full">
-            {currentCareer.key} — {currentCareerIdx + 1}/6
+            {currentCareer.key} — {currentCareerIdx + 1}/{careers.length}
           </span>
           <h1 className="text-xl font-bold mt-3">{currentCareer.name}</h1>
           <p className="text-gray-500 text-sm mt-1">Selecciona el mejor proyecto</p>

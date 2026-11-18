@@ -5,7 +5,7 @@ import { CURRENT } from '../lib/editions'
 import { getVotes, resetAllVotes, tallyVotes } from '../lib/votes'
 import { onVotingStatusChange, setVotingOpen } from '../lib/settings'
 import Layout from '../components/Layout'
-import PinGate from '../components/PinGate'
+import AuthGate from '../components/AuthGate'
 import { Link } from 'react-router-dom'
 import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight, Edit3 } from 'lucide-react'
 
@@ -56,7 +56,7 @@ export default function Admin() {
   }
 
   return (
-    <PinGate label="Panel de Administración" pin="3000">
+    <AuthGate label="Admin" admin>
       <Layout showBack>
         <div className="max-w-2xl mx-auto p-4 pb-8">
           <div className="flex items-center justify-between mt-4 mb-6">
@@ -242,6 +242,6 @@ export default function Admin() {
           </div>
         </div>
       </Layout>
-    </PinGate>
+    </AuthGate>
   )
 }

@@ -1,7 +1,8 @@
-// BORRADOR — no está desplegado. Reglas propuestas para Firestore.
-// Requiere activar Firebase Authentication (Google, restringido a @udem.edu)
-// y dar de alta a los administradores en la colección `admins` (un documento
-// por UID). Revisar y pegar en Firebase Console → Firestore → Reglas.
+// BORRADOR — no está desplegado. Reglas para Firestore.
+// Pegar en Firebase Console → Firestore → Reglas, DESPUÉS de publicar el
+// sitio con inicio de sesión y de dar de alta a los administradores:
+// colección `admins`, un documento por persona cuyo ID es su correo en
+// minúsculas (el contenido puede ir vacío).
 
 rules_version = '2';
 service cloud.firestore {
@@ -10,17 +11,18 @@ service cloud.firestore {
     function signedIn() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email.matches('.*@udem[.]edu$');
+        && request.auth.token.email.lower().matches('.*@udem[.]edu$');
     }
     function isAdmin() {
-      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
     }
     function votingOpen() {
       return get(/databases/$(database)/documents/settings/voting).data.votingOpen == true;
     }
 
-    // Proyectos: cualquiera los ve; solo cuentas UDEM los crean o editan,
-    // con límites de tamaño; solo admin borra.
+    // Proyectos: cualquiera los ve; solo cuentas @udem.edu los crean o editan,
+    // con límites de tamaño; solo administración los borra.
     match /projects/{id} {
       allow read: if true;
       allow create, update: if signedIn()
@@ -33,25 +35,30 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Votos: un documento por profesor y categoría, con el UID en el id, para
-    // que no se pueda votar dos veces. Nadie los lee salvo admin.
+    // Votos: un documento por cuenta y categoría, con id fijo
+    // (edición_uid_categoría), creado una sola vez. Solo administración los
+    // lista o borra; cada quien puede consultar si ya votó.
     match /votes/{voteId} {
-      allow read, delete: if isAdmin();
+      allow list, delete: if isAdmin();
+      allow get: if isAdmin()
+        || (signedIn() && voteId.matches('.*_' + request.auth.uid + '_.*'));
       allow create: if signedIn() && votingOpen()
-        && voteId == request.auth.uid + '_' + request.resource.data.career
-        && request.resource.data.voterUid == request.auth.uid;
+        && voteId == request.resource.data.edition + '_' + request.auth.uid + '_' + request.resource.data.career
+        && request.resource.data.voterUid == request.auth.uid
+        && request.resource.data.voterEmail == request.auth.token.email;
       allow update: if false;
     }
 
-    // Ajustes (abrir y cerrar votación): lectura pública, escritura solo admin.
+    // Abrir y cerrar la votación: lectura pública, escritura solo administración.
     match /settings/{doc} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /admins/{uid} {
-      allow read: if signedIn() && request.auth.uid == uid;
-      allow write: if false; // se dan de alta desde la consola
+    // Cada quien puede comprobar si su propio correo es administrador.
+    match /admins/{email} {
+      allow get: if signedIn() && request.auth.token.email.lower() == email;
+      allow list, write: if false; // se dan de alta desde la consola
     }
   }
 }

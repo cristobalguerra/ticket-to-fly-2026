@@ -7,7 +7,8 @@ import tailwindcss from '@tailwindcss/vite'
 // inyecta scripts en línea que la política bloquearía).
 const CSP = [
   "default-src 'self'",
-  "script-src 'self'",
+  // apis.google.com: lo carga Firebase para la ventana de inicio de sesión.
+  "script-src 'self' https://apis.google.com",
   // React escribe estilos en línea (atributo style) y la hoja de Google Fonts es externa.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
@@ -15,6 +16,7 @@ const CSP = [
   "img-src 'self' data: blob:",
   "connect-src 'self' https://firestore.googleapis.com https://*.googleapis.com",
   "worker-src 'self' blob:",
+  "frame-src https://*.firebaseapp.com https://accounts.google.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

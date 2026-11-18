@@ -3,7 +3,7 @@ import { CAREERS, type Project } from '../types'
 import { getProjects } from '../lib/projects'
 import { CURRENT } from '../lib/editions'
 import { getVotes, tallyVotes } from '../lib/votes'
-import PinGate from '../components/PinGate'
+import AuthGate from '../components/AuthGate'
 import confetti from 'canvas-confetti'
 import { Trophy, Plane, ChevronRight } from 'lucide-react'
 
@@ -191,7 +191,7 @@ export default function Ceremony() {
   const isDone = currentIdx >= winners.length - 1 && currentIdx >= 0
 
   return (
-    <PinGate label="Ceremony Mode">
+    <AuthGate label="Ceremonia" admin>
       <div
         className="ceremony-bg min-h-dvh flex flex-col items-center justify-center p-6 text-white cursor-pointer select-none"
         onClick={advance}
@@ -286,6 +286,6 @@ export default function Ceremony() {
           </div>
         ) : null}
       </div>
-    </PinGate>
+    </AuthGate>
   )
 }

@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react'
 import { CAREERS, type Career, type Project } from '../types'
 import { addProject, getProjects, deleteProject, updateProject } from '../lib/projects'
 import Layout from '../components/Layout'
-import PinGate from '../components/PinGate'
+import AuthGate from '../components/AuthGate'
+import { useSession } from '../lib/auth'
 import { Trash2, ImagePlus, Loader2, Pencil, X } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
 export default function Upload() {
+  // Solo administración puede borrar proyectos.
+  const { admin } = useSession()
   const [career, setCareer] = useState<Career>('LDG')
   const [projectName, setProjectName] = useState('')
   const [teamName, setTeamName] = useState('')
@@ -115,7 +118,7 @@ export default function Upload() {
   const inputStyle = { transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }
 
   return (
-    <PinGate label="Subir Proyectos">
+    <AuthGate label="Subir proyecto">
       <Layout showBack>
         <div className="max-w-2xl mx-auto p-4 pb-8">
           <div className="flex items-center justify-between mt-4 mb-6">
@@ -262,20 +265,22 @@ export default function Upload() {
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(p)}
-                    aria-label="Eliminar"
-                    className="p-2 text-gray-300 hover:text-red-500 shrink-0"
-                    style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {admin && (
+                    <button
+                      onClick={() => handleDelete(p)}
+                      aria-label="Eliminar"
+                      className="p-2 text-gray-300 hover:text-red-500 shrink-0"
+                      style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         </div>
       </Layout>
-    </PinGate>
+    </AuthGate>
   )
 }

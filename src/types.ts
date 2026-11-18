@@ -24,6 +24,8 @@ export interface Project {
 export interface Vote {
   id: string
   voterName: string
+  voterUid?: string
+  voterEmail?: string
   career: Career | 'general'
   projectId: string
   voteType: 'career' | 'general'

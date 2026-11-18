@@ -141,6 +141,9 @@ export default function Info() {
             <p className="text-[15px] leading-[1.6] text-white/90 max-w-[62ch] mt-7">
               Es de suma importancia que consideren su asistencia al evento para que sea válido su voto.
             </p>
+            <p className="bg-udem-yellow text-udem-black font-bold text-[15px] leading-[1.5] p-4 max-w-[46ch] mt-7">
+              Solamente pueden votar profesores. Los proyectos quedarán descalificados si un alumno vota en cualquiera de los proyectos.
+            </p>
           </section>
 
           <section className="stagger-in bg-white p-5 md:p-7" data-i="7">
