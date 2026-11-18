@@ -72,6 +72,15 @@ export async function resetAllVotes() {
   }
 }
 
+/** Anula votos concretos (por ejemplo, los de una cuenta que no debía votar). */
+export async function deleteVotes(ids: string[]) {
+  for (let i = 0; i < ids.length; i += 400) {
+    const batch = writeBatch(db)
+    ids.slice(i, i + 400).forEach((id) => batch.delete(doc(db, 'votes', id)))
+    await batch.commit()
+  }
+}
+
 export function tallyVotes(votes: Vote[], _projectsMap: Map<string, { projectName: string; career: Career }>) {
   const careerTallies: Record<string, Record<string, number>> = {}
   const generalTally: Record<string, number> = {}

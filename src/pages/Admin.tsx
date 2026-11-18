@@ -1,40 +1,87 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { CAREERS, type Project, type Vote } from '../types'
 import { getProjects } from '../lib/projects'
 import { CURRENT } from '../lib/editions'
-import { getVotes, resetAllVotes, tallyVotes } from '../lib/votes'
+import { getVotes, resetAllVotes, deleteVotes, tallyVotes } from '../lib/votes'
 import { onVotingStatusChange, setVotingOpen } from '../lib/settings'
 import Layout from '../components/Layout'
 import AuthGate from '../components/AuthGate'
-import { Link } from 'react-router-dom'
-import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight, Edit3 } from 'lucide-react'
 
-const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
+const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
+const LABEL = 'code text-[13px] md:text-sm text-udem-black/70'
+const ACTION =
+  'code text-[13px] md:text-sm bg-udem-black text-white px-5 py-3.5 hover:bg-udem-yellow hover:text-black focus-visible:bg-udem-yellow focus-visible:text-black outline-none disabled:opacity-50'
+const ACTION_STYLE = { transition: `background-color 160ms ${EASE}, color 160ms ${EASE}` }
 
 export default function Admin() {
+  return (
+    <AuthGate label="Admin" admin>
+      <Dashboard />
+    </AuthGate>
+  )
+}
+
+const LOAD_ERROR = 'No se pudieron cargar los votos. Comprueba que tu cuenta sea administradora y recarga.'
+
+// Proyectos y votos se piden por separado: si los votos fallan, los
+// proyectos se muestran igual.
+async function fetchAll() {
+  const [p, v] = await Promise.allSettled([getProjects(), getVotes()])
+  if (p.status === 'rejected') console.error(p.reason)
+  if (v.status === 'rejected') console.error(v.reason)
+  return {
+    projects: p.status === 'fulfilled' ? p.value : [],
+    votes: v.status === 'fulfilled' ? v.value : [],
+    failed: p.status === 'rejected' || v.status === 'rejected',
+  }
+}
+
+interface Voter {
+  key: string
+  name: string
+  email: string
+  voteIds: string[]
+}
+
+// Se monta solo cuando la cuenta ya pasó como administradora: antes de eso
+// las reglas no dejan leer los votos.
+function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [votes, setVotes] = useState<Vote[]>([])
-  const [votingOpen, setVotingOpenState] = useState(false)
+  const [votingOpen, setVotingOpenState] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    loadData()
-    const unsub = onVotingStatusChange(setVotingOpenState)
-    return unsub
-  }, [])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setRefreshing(true)
-    const [p, v] = await Promise.all([getProjects(), getVotes()])
-    setProjects(p)
-    setVotes(v)
+    const data = await fetchAll()
+    setProjects(data.projects)
+    setVotes(data.votes)
+    setError(data.failed ? LOAD_ERROR : '')
     setLoading(false)
     setRefreshing(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    fetchAll().then((data) => {
+      if (!alive) return
+      setProjects(data.projects)
+      setVotes(data.votes)
+      setError(data.failed ? LOAD_ERROR : '')
+      setLoading(false)
+    })
+    const unsub = onVotingStatusChange(setVotingOpenState)
+    return () => { alive = false; unsub() }
+  }, [])
 
   async function toggleVoting() {
-    await setVotingOpen(!votingOpen)
+    if (votingOpen === null) return
+    const next = !votingOpen
+    if (!confirm(next ? '¿Abrir la votación ahora?' : '¿Cerrar la votación ahora?')) return
+    await setVotingOpen(next)
   }
 
   async function handleReset() {
@@ -44,204 +91,176 @@ export default function Admin() {
     await loadData()
   }
 
+  async function handleAnnul(voter: Voter) {
+    if (!confirm(`¿Anular los ${voter.voteIds.length} votos de ${voter.name}${voter.email ? ` (${voter.email})` : ''}? No se puede deshacer.`)) return
+    await deleteVotes(voter.voteIds)
+    await loadData()
+  }
+
   const projectsMap = new Map(projects.map((p) => [p.id, { projectName: p.projectName, career: p.career }]))
   const { careerTallies, generalTally, totalVoters } = tallyVotes(votes, projectsMap)
 
-  function getWinner(tally: Record<string, number> | undefined) {
-    if (!tally) return null
-    const entries = Object.entries(tally)
-    if (entries.length === 0) return null
-    entries.sort((a, b) => b[1] - a[1])
-    return entries[0]
+  const votersMap = new Map<string, Voter>()
+  for (const v of votes) {
+    const key = v.voterUid ?? v.voterName
+    const entry = votersMap.get(key) ?? { key, name: v.voterName, email: v.voterEmail ?? '', voteIds: [] }
+    entry.voteIds.push(v.id)
+    votersMap.set(key, entry)
   }
+  const voters = [...votersMap.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+
+  const generalRows = Object.entries(generalTally)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, count]) => ({ id, count, name: projectsMap.get(id)?.projectName ?? id, detail: projectsMap.get(id)?.career ?? '' }))
 
   return (
-    <AuthGate label="Admin" admin>
-      <Layout showBack>
-        <div className="max-w-2xl mx-auto p-4 pb-8">
-          <div className="flex items-center justify-between mt-4 mb-6">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <button
-              onClick={loadData}
-              aria-label="Recargar"
-              className="p-2 text-gray-400 hover:text-udem-black"
-              style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-            >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-
-          {/* Controls */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <button
-              onClick={toggleVoting}
-              className={`flex items-center justify-center gap-2 p-4 font-bold text-sm border-2 ${
-                votingOpen
-                  ? 'bg-green-100 text-green-800 border-green-300'
-                  : 'bg-red-100 text-red-800 border-red-300'
-              }`}
-              style={{ transition: `background-color 220ms ${EASE_OUT}, border-color 220ms ${EASE_OUT}, color 220ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-            >
-              {votingOpen ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-              Votación {votingOpen ? 'Abierta' : 'Cerrada'}
-            </button>
-
-            <Link
-              to="/ceremony"
-              className="flex items-center justify-center gap-2 p-4 font-bold text-sm bg-ead-indigo text-white hover:brightness-110"
-              style={{ transition: `filter 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-            >
-              <Presentation className="w-5 h-5" />
-              Ceremony Mode
-            </Link>
-          </div>
-
-          <Link
-            to="/upload"
-            className="flex items-center justify-center gap-2 p-3 font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black mb-6 hover:bg-gray-50"
-            style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-          >
-            <Edit3 className="w-4 h-4" />
-            Editar Proyectos
-          </Link>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="bg-white p-4 border border-gray-100 text-center">
-              <Users className="w-6 h-6 text-ead-teal mx-auto mb-1" />
-              <p className="text-2xl font-bold tabular-nums">{totalVoters}</p>
-              <p className="text-xs text-gray-500">Profesores votaron</p>
-            </div>
-            <div className="bg-white p-4 border border-gray-100 text-center">
-              <Trophy className="w-6 h-6 text-udem-yellow mx-auto mb-1" />
-              <p className="text-2xl font-bold tabular-nums">{projects.length}</p>
-              <p className="text-xs text-gray-500">Proyectos registrados</p>
-            </div>
-          </div>
-
-          {loading ? (
-            <p className="text-center text-gray-400 py-8">Cargando...</p>
-          ) : (
-            <>
-              {/* Career results */}
-              {CAREERS.map((c, ci) => {
-                const tally = careerTallies[c.key]
-                const careerProjects = projects.filter((p) => p.career === c.key)
-                const winner = getWinner(tally)
-                const totalCareerVotes = tally ? Object.values(tally).reduce((a, b) => a + b, 0) : 0
-
-                return (
-                  <div key={c.key} className="stagger-in mb-6" data-i={Math.min(ci, 7)}>
-                    <h3 className="font-bold text-sm flex items-center gap-2 mb-2">
-                      <span className="bg-ead-teal text-white px-2 py-0.5 rounded text-xs">{c.key}</span>
-                      {c.name}
-                      <span className="text-gray-400 text-xs ml-auto tabular-nums">{totalCareerVotes} votos</span>
-                    </h3>
-                    <div className="bg-white overflow-hidden border border-gray-100 shadow-sm">
-                      {careerProjects.length === 0 ? (
-                        <p className="p-3 text-gray-400 text-sm">Sin proyectos</p>
-                      ) : (
-                        careerProjects.map((p) => {
-                          const count = tally?.[p.id] || 0
-                          const pct = totalCareerVotes > 0 ? Math.round((count / totalCareerVotes) * 100) : 0
-                          const isWinner = winner?.[0] === p.id && count > 0
-
-                          return (
-                            <div
-                              key={p.id}
-                              className={`relative flex items-center gap-3 p-3 border-b border-gray-50 last:border-0 ${
-                                isWinner ? 'bg-yellow-50' : ''
-                              }`}
-                              style={{ transition: `background-color 240ms ${EASE_OUT}` }}
-                            >
-                              {/* Vote bar */}
-                              <div
-                                className="absolute inset-y-0 left-0 bg-udem-black/[0.03] pointer-events-none"
-                                style={{
-                                  width: `${pct}%`,
-                                  transition: `width 600ms ${EASE_OUT}`,
-                                }}
-                              />
-                              {isWinner && <Trophy className="w-4 h-4 text-udem-yellow shrink-0 relative" />}
-                              <div className="flex-1 min-w-0 relative">
-                                <p className={`text-sm truncate ${isWinner ? 'font-bold' : ''}`}>{p.projectName}</p>
-                                <p className="text-xs text-gray-400 truncate">{p.teamName}</p>
-                              </div>
-                              <div className="text-right shrink-0 relative">
-                                <p className="font-bold text-sm tabular-nums">{count}</p>
-                                <p className="text-xs text-gray-400 tabular-nums">{pct}%</p>
-                              </div>
-                            </div>
-                          )
-                        })
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-
-              {/* General result */}
-              <div className="stagger-in mb-6" data-i="7">
-                <h3 className="font-bold text-sm flex items-center gap-2 mb-2">
-                  <span className="bg-ead-indigo text-white px-2 py-0.5 rounded text-xs">GENERAL</span>
-                  Mejor Proyecto EAD
-                </h3>
-                <div className="bg-white overflow-hidden border border-gray-100 shadow-sm">
-                  {Object.keys(generalTally).length === 0 ? (
-                    <p className="p-3 text-gray-400 text-sm">Sin votos aún</p>
-                  ) : (
-                    (() => {
-                      const totalGen = Object.values(generalTally).reduce((a, b) => a + b, 0)
-                      const sorted = Object.entries(generalTally).sort((a, b) => b[1] - a[1])
-                      return sorted.map(([pid, count]) => {
-                        const p = projectsMap.get(pid)
-                        const pct = totalGen > 0 ? Math.round((count / totalGen) * 100) : 0
-                        const isWinner = sorted[0][0] === pid
-                        return (
-                          <div
-                            key={pid}
-                            className={`relative flex items-center gap-3 p-3 border-b border-gray-50 last:border-0 ${isWinner ? 'bg-yellow-50' : ''}`}
-                            style={{ transition: `background-color 240ms ${EASE_OUT}` }}
-                          >
-                            <div
-                              className="absolute inset-y-0 left-0 bg-udem-black/[0.03] pointer-events-none"
-                              style={{ width: `${pct}%`, transition: `width 600ms ${EASE_OUT}` }}
-                            />
-                            {isWinner && <Trophy className="w-4 h-4 text-udem-yellow shrink-0 relative" />}
-                            <div className="flex-1 min-w-0 relative">
-                              <p className={`text-sm truncate ${isWinner ? 'font-bold' : ''}`}>
-                                {p?.projectName || pid}
-                              </p>
-                              <p className="text-xs text-gray-400">{p?.career}</p>
-                            </div>
-                            <div className="text-right shrink-0 relative">
-                              <p className="font-bold text-sm tabular-nums">{count}</p>
-                              <p className="text-xs text-gray-400 tabular-nums">{pct}%</p>
-                            </div>
-                          </div>
-                        )
-                      })
-                    })()
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Danger zone */}
-          <div className="mt-8 border-2 border-red-200 p-4">
-            <h3 className="font-bold text-red-600 text-sm mb-3">Zona de peligro</h3>
-            <button
-              onClick={handleReset}
-              className="flex items-center justify-center gap-2 w-full bg-red-100 text-red-700 font-bold py-3 hover:bg-red-200 text-sm"
-              style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-            >
-              <Trash2 className="w-4 h-4" />
-              Resetear votos de {CURRENT.label}
-            </button>
-          </div>
+    <Layout showBack>
+      <div className="px-4 md:px-8 pb-20">
+        <div className="pt-8 md:pt-10 stagger-in flex flex-wrap items-end justify-between gap-x-8 gap-y-3" data-i="0">
+          <h1 className="cond text-[22vw] sm:text-[8.5rem] md:text-[11rem] -ml-[0.015em]">Admin</h1>
+          <p className="code text-[13px] md:text-[15px] leading-[1.7] pb-2 md:pb-4">{CURRENT.label}</p>
         </div>
-      </Layout>
-    </AuthGate>
+
+        <dl className="stagger-in grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10 mt-10 md:mt-14" data-i="1">
+          <Fact value={votingOpen === null ? '—' : votingOpen ? 'Abierta' : 'Cerrada'} label="Votación" accent={votingOpen === true} />
+          <Fact value={String(totalVoters)} label="Cuentas que votaron" />
+          <Fact value={String(votes.length)} label="Votos registrados" />
+          <Fact value={String(projects.length)} label="Proyectos" />
+        </dl>
+
+        <div className="stagger-in flex flex-wrap gap-2 mt-10" data-i="2">
+          <button type="button" onClick={toggleVoting} disabled={votingOpen === null} className={ACTION} style={ACTION_STYLE}>
+            → {votingOpen ? 'Cerrar votación' : 'Abrir votación'}
+          </button>
+          <Link to="/ceremony" className={ACTION} style={ACTION_STYLE}>→ Ceremonia</Link>
+          <Link to="/upload" className={ACTION} style={ACTION_STYLE}>→ Editar proyectos</Link>
+          <button type="button" onClick={loadData} disabled={refreshing} className={ACTION} style={ACTION_STYLE}>
+            {refreshing ? 'Actualizando…' : '→ Actualizar'}
+          </button>
+        </div>
+
+        <p aria-live="polite" className="text-sm text-red-700 mt-4 min-h-5">{error}</p>
+
+        {loading ? (
+          <p className={`${LABEL} mt-16`}>Cargando…</p>
+        ) : (
+          <>
+            <Row label="Mejor proyecto EAD" note={`${generalRows.reduce((a, r) => a + r.count, 0)} votos`}>
+              <Results rows={generalRows} empty="Sin votos aún" />
+            </Row>
+
+            {CAREERS.map((c) => {
+              const tally = careerTallies[c.key] ?? {}
+              const rows = projects
+                .filter((p) => p.career === c.key)
+                .map((p) => ({ id: p.id, count: tally[p.id] ?? 0, name: p.projectName, detail: p.teamName }))
+                .sort((a, b) => b.count - a.count)
+              if (rows.length === 0) return null
+              return (
+                <Row key={c.key} label={`${c.key} · ${c.name}`} note={`${rows.reduce((a, r) => a + r.count, 0)} votos`}>
+                  <Results rows={rows} empty="Sin proyectos" />
+                </Row>
+              )
+            })}
+
+            <Row label="Quién votó" note={`${voters.length} cuentas`}>
+              {voters.length === 0 ? (
+                <p className="text-base text-udem-black/65">Nadie ha votado todavía.</p>
+              ) : (
+                <ul className="max-w-4xl space-y-1">
+                  {voters.map((v) => (
+                    <li key={v.key} className="bg-white flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-3">
+                      <span className="font-bold text-base">{v.name}</span>
+                      <span className="code text-[13px] text-udem-black/70 normal-case">{v.email}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleAnnul(v)}
+                        className="code text-[13px] ml-auto underline underline-offset-4 hover:text-red-700 focus-visible:text-red-700 outline-none"
+                      >
+                        Anular sus votos
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Row>
+
+            <Row label="Borrar votos">
+              <p className="text-base md:text-[17px] leading-[1.6] text-udem-black/85 max-w-[62ch]">
+                Elimina todos los votos de {CURRENT.label}. Los de ediciones anteriores no se tocan. No se puede deshacer.
+              </p>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="code text-[13px] md:text-sm mt-5 border-2 border-red-700 text-red-700 px-5 py-3 hover:bg-red-700 hover:text-white focus-visible:bg-red-700 focus-visible:text-white outline-none"
+                style={ACTION_STYLE}
+              >
+                Borrar votos de {CURRENT.label}
+              </button>
+            </Row>
+          </>
+        )}
+      </div>
+    </Layout>
+  )
+}
+
+function Fact({ value, label, accent }: { value: string; label: string; accent?: boolean }) {
+  return (
+    <div className="flex flex-col-reverse justify-end">
+      <dt className={`${LABEL} mt-3`}>{label}</dt>
+      <dd className="cond text-[13vw] sm:text-6xl lg:text-7xl tabular-nums whitespace-nowrap">
+        <span className={accent ? 'bg-udem-yellow px-[0.08em] -ml-[0.08em]' : undefined}>{value}</span>
+      </dd>
+    </div>
+  )
+}
+
+function Row({ label, note, children }: { label: string; note?: string; children: React.ReactNode }) {
+  return (
+    <section className="grid md:grid-cols-12 gap-x-8 gap-y-4 mt-14 md:mt-20">
+      <div className="md:col-span-3">
+        <h2 className={LABEL}>{label}</h2>
+        {note && <p className="code text-[13px] text-udem-black/50 mt-1 tabular-nums">{note}</p>}
+      </div>
+      <div className="md:col-span-9">{children}</div>
+    </section>
+  )
+}
+
+interface ResultRow {
+  id: string
+  count: number
+  name: string
+  detail: string
+}
+
+function Results({ rows, empty }: { rows: ResultRow[]; empty: string }) {
+  if (rows.length === 0) return <p className="text-base text-udem-black/65">{empty}</p>
+  const total = rows.reduce((a, r) => a + r.count, 0)
+  const top = rows[0].count
+  return (
+    <ol className="max-w-4xl space-y-1">
+      {rows.map((r) => {
+        const pct = total > 0 ? Math.round((r.count / total) * 100) : 0
+        // Puede haber empate: todos los que igualan el máximo van marcados.
+        const leading = r.count > 0 && r.count === top
+        return (
+          <li key={r.id} className="relative bg-white flex items-center gap-4 px-4 py-3 overflow-hidden">
+            <span
+              className={`absolute inset-y-0 left-0 ${leading ? 'bg-udem-yellow' : 'bg-udem-black/[0.07]'}`}
+              style={{ width: `${pct}%`, transition: `width 600ms ${EASE}` }}
+              aria-hidden
+            />
+            <div className="relative flex-1 min-w-0">
+              <p className={`text-base leading-snug truncate ${leading ? 'font-bold' : ''}`}>{r.name}</p>
+              <p className="text-sm text-udem-black/65 truncate">{r.detail}</p>
+            </div>
+            <p className="relative cond text-4xl tabular-nums shrink-0">{r.count}</p>
+            <p className="relative code text-[13px] text-udem-black/70 tabular-nums w-10 text-right shrink-0">{pct}%</p>
+          </li>
+        )
+      })}
+    </ol>
   )
 }

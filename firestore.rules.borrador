@@ -29,7 +29,7 @@ service cloud.firestore {
         && request.resource.data.projectName.size() <= 160
         && request.resource.data.teamName.size() <= 200
         && request.resource.data.description.size() <= 280
-        && request.resource.data.coverUrl.size() <= 400000
+        && request.resource.data.coverUrl.size() <= 900000
         && request.resource.data.editors is list
         && request.resource.data.editors.size() <= 12
         && request.resource.data.career in ['LDG', 'LAED', 'LDM', 'LINT', 'LDI', 'LA', 'POSG'];
@@ -58,7 +58,7 @@ service cloud.firestore {
       allow create: if signedIn() && votingOpen()
         && voteId == request.resource.data.edition + '_' + request.auth.uid + '_' + request.resource.data.career
         && request.resource.data.voterUid == request.auth.uid
-        && request.resource.data.voterEmail == request.auth.token.email;
+        && request.resource.data.voterEmail.lower() == request.auth.token.email.lower();
       allow update: if false;
     }
 

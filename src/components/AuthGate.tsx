@@ -17,6 +17,11 @@ const BUTTON =
 export default function AuthGate({ children, label, admin = false }: Props) {
   const session = useSession()
 
+  // Solo en desarrollo local: ?nogate permite revisar el diseño sin iniciar
+  // sesión. No existe en el build publicado, y las reglas de la base siguen
+  // siendo las que protegen los datos.
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('nogate')) return <>{children}</>
+
   if (!session.loading && session.user && (!admin || session.admin)) return <>{children}</>
 
   return (

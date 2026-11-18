@@ -1,291 +1,217 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
+import confetti from 'canvas-confetti'
 import { CAREERS, type Project } from '../types'
 import { getProjects } from '../lib/projects'
 import { CURRENT } from '../lib/editions'
 import { getVotes, tallyVotes } from '../lib/votes'
 import AuthGate from '../components/AuthGate'
-import confetti from 'canvas-confetti'
-import { Trophy, Plane, ChevronRight } from 'lucide-react'
+
+// Modo ceremonia: una pantalla por premio, pensada para proyectarse.
+// Avanza con clic, espacio, Enter o →; retrocede con ←.
 
 interface WinnerInfo {
   project: Project
   votes: number
+  /** Clave de carrera, o «EAD» para el premio general */
   label: string
   sublabel: string
+  general: boolean
 }
 
-const DEMO_WINNERS: WinnerInfo[] = [
-  ...CAREERS.map((c, i): WinnerInfo => ({
-    project: {
-      id: `demo-${i}`,
-      career: c.key,
-      projectName: ['Oneiro', 'Metamorfosis', 'Hilos del Tiempo', 'Casa Origen', 'Flujo Urbano', 'Ecos'][i],
-      teamName: ['Sofia Martinez', 'Diego Lopez', 'Ana Garza', 'Carlos Reyes', 'Mariana Torres', 'Luis Hernandez'][i],
-      description: '',
-      coverUrl: '',
-      createdAt: new Date(),
-    },
-    votes: [12, 9, 11, 8, 10, 7][i],
-    label: c.key,
-    sublabel: c.name,
-  })),
-  {
-    project: {
-      id: 'demo-general',
-      career: 'LDG',
-      projectName: 'Oneiro',
-      teamName: 'Sofia Martinez',
-      description: '',
-      coverUrl: '',
-      createdAt: new Date(),
-    },
-    votes: 15,
-    label: 'EAD',
-    sublabel: 'Mejor Proyecto General',
-  },
-]
+const COLORS = ['#FFF500', '#ffffff', '#8f8f8f']
 
-function Particles() {
-  const particles = useMemo(() =>
-    Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 15}s`,
-      duration: `${8 + Math.random() * 12}s`,
-      size: `${2 + Math.random() * 3}px`,
-      opacity: 0.1 + Math.random() * 0.2,
-    })), [])
-
+export default function Ceremony() {
   return (
-    <div className="ceremony-particles">
-      {particles.map((p) => (
-        <span
-          key={p.id}
-          style={{
-            left: p.left,
-            animationDelay: p.delay,
-            animationDuration: p.duration,
-            width: p.size,
-            height: p.size,
-            opacity: p.opacity,
-          }}
-        />
-      ))}
-    </div>
+    <AuthGate label="Ceremonia" admin>
+      <Stage />
+    </AuthGate>
   )
 }
 
-export default function Ceremony() {
-  const [winners, setWinners] = useState<WinnerInfo[]>([])
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [loading, setLoading] = useState(true)
-  const [isDemo, setIsDemo] = useState(false)
+function pickWinners(projects: Project[], tally: Record<string, number> | undefined): { project: Project; votes: number } | null {
+  const sorted = Object.entries(tally ?? {}).sort((a, b) => b[1] - a[1])
+  if (sorted.length === 0) return null
+  const project = projects.find((p) => p.id === sorted[0][0])
+  return project ? { project, votes: sorted[0][1] } : null
+}
+
+function Stage() {
+  const [winners, setWinners] = useState<WinnerInfo[] | null>(null)
+  const [projects, setProjects] = useState<Project[]>([])
+  // Ensayo: sin votos todavía, recorre un proyecto por carrera para probar la proyección.
+  const [rehearsal, setRehearsal] = useState(false)
+  const [failed, setFailed] = useState(false)
+  // -1 = portada
+  const [idx, setIdx] = useState(-1)
 
   useEffect(() => {
-    loadResults()
-  }, [])
-
-  async function loadResults() {
-    const [projects, votes] = await Promise.all([getProjects(), getVotes()])
-    const projectsMap = new Map(projects.map((p) => [p.id, { projectName: p.projectName, career: p.career }]))
-    const { careerTallies, generalTally } = tallyVotes(votes, projectsMap)
-
-    const result: WinnerInfo[] = []
-
-    for (const c of CAREERS) {
-      const tally = careerTallies[c.key]
-      if (!tally) continue
-      const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1])
-      if (sorted.length === 0) continue
-      const [pid, count] = sorted[0]
-      const project = projects.find((p) => p.id === pid)
-      if (project) {
-        result.push({ project, votes: count, label: c.key, sublabel: c.name })
+    let alive = true
+    Promise.allSettled([getProjects(), getVotes()]).then(([p, v]) => {
+      if (!alive) return
+      const projects = p.status === 'fulfilled' ? p.value : []
+      setProjects(projects)
+      if (v.status === 'rejected') {
+        console.error(v.reason)
+        setFailed(true)
+        return
       }
-    }
-
-    const genSorted = Object.entries(generalTally).sort((a, b) => b[1] - a[1])
-    if (genSorted.length > 0) {
-      const [pid, count] = genSorted[0]
-      const project = projects.find((p) => p.id === pid)
-      if (project) {
-        result.push({ project, votes: count, label: 'EAD', sublabel: 'Mejor Proyecto General' })
+      const map = new Map(projects.map((x) => [x.id, { projectName: x.projectName, career: x.career }]))
+      const { careerTallies, generalTally } = tallyVotes(v.value, map)
+      const result: WinnerInfo[] = []
+      for (const c of CAREERS) {
+        const w = pickWinners(projects, careerTallies[c.key])
+        if (w) result.push({ ...w, label: c.key, sublabel: c.name, general: false })
       }
-    }
-
-    if (result.length > 0) {
+      const g = pickWinners(projects, generalTally)
+      if (g) result.push({ ...g, label: 'EAD', sublabel: 'Mejor proyecto de la Escuela', general: true })
       setWinners(result)
-    } else {
-      setWinners(DEMO_WINNERS)
-      setIsDemo(true)
-    }
-    setLoading(false)
-  }
-
-  const fireConfetti = useCallback(() => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#FFF500', '#00646c', '#363363', '#ffffff'],
-      gravity: 0.8,
-      drift: 0,
-      ticks: 200,
     })
-    setTimeout(() => {
-      confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.65 }, colors: ['#FFF500', '#00646c'] })
-      confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.65 }, colors: ['#FFF500', '#363363'] })
-    }, 250)
+    return () => { alive = false }
   }, [])
 
-  const fireBigConfetti = useCallback(() => {
-    // Initial burst
-    confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#FFF500', '#00646c', '#363363', '#fff'], gravity: 0.6, ticks: 300 })
-
-    const duration = 4000
-    const end = Date.now() + duration
-    const colors = ['#FFF500', '#00646c', '#363363', '#ffffff']
+  const celebrate = useCallback((big: boolean) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    confetti({ particleCount: big ? 220 : 110, spread: big ? 110 : 75, origin: { y: 0.6 }, colors: COLORS, gravity: 0.8, ticks: big ? 320 : 200 })
+    if (!big) return
+    const end = Date.now() + 3500
     const frame = () => {
-      confetti({ particleCount: 3, angle: 60, spread: 60, origin: { x: 0 }, colors, gravity: 0.7 })
-      confetti({ particleCount: 3, angle: 120, spread: 60, origin: { x: 1 }, colors, gravity: 0.7 })
+      confetti({ particleCount: 3, angle: 60, spread: 60, origin: { x: 0 }, colors: COLORS, gravity: 0.7 })
+      confetti({ particleCount: 3, angle: 120, spread: 60, origin: { x: 1 }, colors: COLORS, gravity: 0.7 })
       if (Date.now() < end) requestAnimationFrame(frame)
     }
     frame()
   }, [])
 
-  function advance() {
-    const nextIdx = currentIdx + 1
-    if (nextIdx >= winners.length) return
-    setCurrentIdx(nextIdx)
-    if (nextIdx === winners.length - 1) {
-      setTimeout(fireBigConfetti, 500)
-    } else {
-      setTimeout(fireConfetti, 500)
+  const total = winners?.length ?? 0
+
+  function startRehearsal() {
+    const sample: WinnerInfo[] = []
+    for (const c of CAREERS) {
+      const project = projects.find((p) => p.career === c.key)
+      if (project) sample.push({ project, votes: 0, label: c.key, sublabel: c.name, general: false })
     }
+    if (sample.length > 0) {
+      sample.push({ ...sample[0], label: 'EAD', sublabel: 'Mejor proyecto de la Escuela', general: true })
+    }
+    setRehearsal(true)
+    setFailed(false)
+    setWinners(sample)
+    setIdx(-1)
   }
+
+  const go = useCallback((next: number) => {
+    if (!winners || next < -1 || next >= winners.length) return
+    setIdx(next)
+    if (next >= 0) window.setTimeout(() => celebrate(winners[next].general), 450)
+  }, [winners, celebrate])
 
   useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault()
-        advance()
-      }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); go(idx + 1) }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1) }
     }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  })
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [go, idx])
 
-  if (loading) {
-    return (
-      <div className="ceremony-bg min-h-dvh flex items-center justify-center text-white">
-        <div className="ceremony-orb-accent" />
-        <Particles />
-        <p className="text-white/40 text-sm">Cargando resultados...</p>
-      </div>
-    )
-  }
-
-  const current = currentIdx >= 0 ? winners[currentIdx] : null
-  const isGeneral = currentIdx === winners.length - 1
-  const isIntro = currentIdx === -1
-  const isDone = currentIdx >= winners.length - 1 && currentIdx >= 0
+  const current = idx >= 0 && winners ? winners[idx] : null
 
   return (
-    <AuthGate label="Ceremonia" admin>
-      <div
-        className="ceremony-bg min-h-dvh flex flex-col items-center justify-center p-6 text-white cursor-pointer select-none"
-        onClick={advance}
-      >
-        <div className="ceremony-orb-accent" />
-        <Particles />
+    <div
+      className="board min-h-dvh flex flex-col px-5 md:px-10 pt-5 md:pt-8 pb-6 md:pb-8 cursor-pointer select-none"
+      onClick={() => go(idx + 1)}
+    >
+      <header className="flex items-start justify-between gap-6 code text-[13px] md:text-[15px] text-white/70">
+        <p>
+          Ticket to Fly <span className="text-udem-yellow">{CURRENT.label}</span>
+          <br />
+          {rehearsal ? <span className="bg-udem-yellow text-black px-1.5">Ensayo · no son resultados</span> : 'Premiación'}
+        </p>
+        <p className="tabular-nums text-right">
+          {idx >= 0 && total > 0 && <>{String(idx + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</>}
+          <br />
+          <Link to="/admin" onClick={(e) => e.stopPropagation()} className="text-white/60 hover:text-white outline-none focus-visible:text-white">
+            Salir
+          </Link>
+        </p>
+      </header>
 
-        {isDemo && (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 glass-pill text-white/50 text-xs px-5 py-2 z-50 tracking-wider uppercase">
-            Modo Demo
-          </div>
-        )}
-
-        {isIntro ? (
-          <div className="text-center ceremony-reveal relative z-10">
-            <div className="logo-ring w-28 h-28 rounded-full flex items-center justify-center mx-auto mb-10">
-              <Plane className="w-12 h-12 text-udem-black relative z-10" />
-            </div>
-            <h1 className="text-5xl md:text-8xl font-black ceremony-title text-udem-yellow tracking-tight">
-              Ticket to Fly
-            </h1>
-            <p className="text-xl text-white/30 mt-4 font-light tracking-[0.3em] uppercase">{CURRENT.label}</p>
-            <p className="text-white/20 mt-16 text-xs flex items-center gap-2 justify-center tracking-wider">
-              Toca para comenzar <ChevronRight className="w-3 h-3 arrow-nudge" />
-            </p>
-          </div>
-        ) : current ? (
-          <div key={currentIdx} className="text-center ceremony-reveal max-w-md w-full relative z-10">
-            {/* Career badge */}
-            <div className="mb-8">
-              <span className={`glass-pill inline-block text-sm font-semibold px-6 py-2 tracking-wider ${
-                isGeneral ? 'text-udem-yellow' : 'text-white/80'
-              }`}>
-                {isGeneral ? 'MEJOR PROYECTO EAD' : `${current.label} — ${current.sublabel}`}
+      {failed ? (
+        <Message title="Sin datos" text="No se pudieron cargar los votos. Comprueba que tu cuenta sea administradora y recarga.">
+          {projects.length > 0 && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); startRehearsal() }}
+              className="code text-[13px] md:text-sm bg-udem-yellow text-black px-5 py-3.5 mt-8 self-start hover:bg-white focus-visible:bg-white outline-none"
+            >
+              → Ensayar con proyectos de ejemplo
+            </button>
+          )}
+        </Message>
+      ) : !winners ? (
+        <Message title="Cargando" text="" />
+      ) : total === 0 ? (
+        <Message title="Sin votos" text={`Todavía no hay votos registrados en ${CURRENT.label}.`}>
+          {projects.length > 0 && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); startRehearsal() }}
+              className="code text-[13px] md:text-sm bg-udem-yellow text-black px-5 py-3.5 mt-8 self-start hover:bg-white focus-visible:bg-white outline-none"
+            >
+              → Ensayar con proyectos de ejemplo
+            </button>
+          )}
+        </Message>
+      ) : !current ? (
+        <div className="ceremony-reveal flex-1 flex flex-col justify-end">
+          <h1 className="cond board-title -ml-[0.015em] whitespace-nowrap">
+            Ticket <br className="md:hidden" />to Fly
+          </h1>
+          <p className="code text-[13px] md:text-[15px] text-white/70 mt-8">
+            {total} {total === 1 ? 'premio' : 'premios'} · Clic o → para comenzar
+          </p>
+        </div>
+      ) : (
+        <div key={idx} className="ceremony-reveal flex-1 grid md:grid-cols-12 gap-x-10 gap-y-8 items-end mt-8">
+          <div className={`md:order-1 order-2 ${current.project.coverUrl ? 'md:col-span-7' : 'md:col-span-12'}`}>
+            <p className="code text-[15px] md:text-xl">
+              <span className={current.general ? 'bg-udem-yellow text-black px-2 py-1' : 'text-udem-yellow'}>
+                {current.label}
               </span>
-            </div>
-
-            {/* Glass card with project */}
-            <div className="glass-card glass-shimmer p-1.5">
-              {current.project.coverUrl ? (
-                <div className="rounded-[20px] overflow-hidden">
-                  <img
-                    src={current.project.coverUrl}
-                    alt={current.project.projectName}
-                    className="w-full aspect-[4/3] object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="rounded-[20px] aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-white/5 to-white/[0.02]">
-                  <Trophy className={`w-24 h-24 ${isGeneral ? 'text-udem-yellow/60' : 'text-ead-teal/60'}`} />
-                </div>
-              )}
-            </div>
-
-            {/* Trophy badge */}
-            <div className="relative -mt-6 mb-2">
-              <div className={`trophy-pulse absolute left-1/2 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl ${
-                isGeneral
-                  ? 'bg-gradient-to-br from-udem-yellow to-yellow-400 shadow-yellow-500/30'
-                  : 'bg-gradient-to-br from-ead-teal to-teal-500 shadow-teal-500/30'
-              }`}>
-                <Trophy className={`w-7 h-7 ${isGeneral ? 'text-udem-black' : 'text-white'}`} />
-              </div>
-            </div>
-
-            {/* Project info */}
-            <div className="mt-12">
-              <h2 className={`text-3xl md:text-5xl font-black leading-tight ${
-                isGeneral ? 'ceremony-title text-udem-yellow' : 'text-white'
-              }`}>
-                {current.project.projectName}
-              </h2>
-              <p className="text-white/40 text-lg mt-3 font-light">{current.project.teamName}</p>
-              <p className="vote-count text-white/20 text-sm mt-5 tracking-wider">
-                {current.votes} votos
+              <span className="text-white/70 ml-4">{current.sublabel}</span>
+            </p>
+            <h2
+              className={`cond mt-6 -ml-[0.015em] break-words ${current.general ? 'text-udem-yellow' : 'text-white'}`}
+              style={{ fontSize: 'clamp(3.5rem, 11vw, 12rem)' }}
+            >
+              {current.project.projectName.split(':')[0].trim()}
+            </h2>
+            <p className="text-xl md:text-3xl font-bold leading-snug mt-6 max-w-[34ch]">{current.project.teamName}</p>
+            {!rehearsal && (
+              <p className="code text-[13px] md:text-[15px] text-white/70 mt-6 tabular-nums">
+                {current.votes} {current.votes === 1 ? 'voto' : 'votos'}
               </p>
-            </div>
-
-            {!isDone && (
-              <p className="text-white/10 mt-16 text-xs flex items-center gap-1 justify-center tracking-widest uppercase">
-                Siguiente <ChevronRight className="w-3 h-3 arrow-nudge" />
-              </p>
-            )}
-
-            {isDone && (
-              <div className="mt-16 ceremony-reveal">
-                <p className="text-white/20 text-xs tracking-widest uppercase">
-                  Felicidades a todos los ganadores
-                </p>
-              </div>
             )}
           </div>
-        ) : null}
-      </div>
-    </AuthGate>
+          {/* Sin imagen no se repite el nombre en una carátula: el texto ocupa todo el ancho. */}
+          {current.project.coverUrl && (
+            <div className="md:col-span-5 md:order-2 order-1 aspect-[4/3] overflow-hidden bg-white/5">
+              <img src={current.project.coverUrl} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Message({ title, text, children }: { title: string; text: string; children?: React.ReactNode }) {
+  return (
+    <div className="flex-1 flex flex-col justify-end">
+      <p className="cond text-[18vw] md:text-[12rem] -ml-[0.015em]">{title}</p>
+      {text && <p className="text-lg md:text-xl text-white/80 mt-6 max-w-[40ch]">{text}</p>}
+      {children}
+    </div>
   )
 }
