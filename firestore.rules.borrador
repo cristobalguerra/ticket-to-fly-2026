@@ -1,0 +1,57 @@
+// BORRADOR — no está desplegado. Reglas propuestas para Firestore.
+// Requiere activar Firebase Authentication (Google, restringido a @udem.edu)
+// y dar de alta a los administradores en la colección `admins` (un documento
+// por UID). Revisar y pegar en Firebase Console → Firestore → Reglas.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('.*@udem[.]edu$');
+    }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function votingOpen() {
+      return get(/databases/$(database)/documents/settings/voting).data.votingOpen == true;
+    }
+
+    // Proyectos: cualquiera los ve; solo cuentas UDEM los crean o editan,
+    // con límites de tamaño; solo admin borra.
+    match /projects/{id} {
+      allow read: if true;
+      allow create, update: if signedIn()
+        && request.resource.data.projectName is string
+        && request.resource.data.projectName.size() <= 160
+        && request.resource.data.teamName.size() <= 200
+        && request.resource.data.description.size() <= 280
+        && request.resource.data.coverUrl.size() <= 400000
+        && request.resource.data.career in ['LDG', 'LAED', 'LDM', 'LINT', 'LDI', 'LA', 'POSG'];
+      allow delete: if isAdmin();
+    }
+
+    // Votos: un documento por profesor y categoría, con el UID en el id, para
+    // que no se pueda votar dos veces. Nadie los lee salvo admin.
+    match /votes/{voteId} {
+      allow read, delete: if isAdmin();
+      allow create: if signedIn() && votingOpen()
+        && voteId == request.auth.uid + '_' + request.resource.data.career
+        && request.resource.data.voterUid == request.auth.uid;
+      allow update: if false;
+    }
+
+    // Ajustes (abrir y cerrar votación): lectura pública, escritura solo admin.
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false; // se dan de alta desde la consola
+    }
+  }
+}
