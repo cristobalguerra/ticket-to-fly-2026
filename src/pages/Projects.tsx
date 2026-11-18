@@ -117,7 +117,7 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-10">
             {filtered.map((p, i) => (
               <div key={p.id} className="stagger-in" data-i={Math.min(i, 7)}>
-                <PreviewCard project={p} showSlot={!archived} onClick={() => setOpenProject(p)} />
+                <PreviewCard project={p} onClick={() => setOpenProject(p)} />
               </div>
             ))}
           </div>
@@ -125,7 +125,7 @@ function ProjectsView({ edition, archived = false }: { edition: Edition; archive
       </div>
 
       {openProject && (
-        <ProjectModal project={openProject} showSlot={!archived} onClose={() => setOpenProject(null)} />
+        <ProjectModal project={openProject} onClose={() => setOpenProject(null)} />
       )}
     </Layout>
   )
@@ -151,16 +151,15 @@ function FilterButton({
   )
 }
 
-function Meta({ project, showSlot }: { project: Project; showSlot: boolean }) {
+function Meta({ project }: { project: Project }) {
   return (
     <p className="code text-[13px] md:text-sm text-udem-black/60 flex gap-3">
       <span>{project.career}</span>
-      {showSlot && project.slotId && <span>Lugar {project.slotId}</span>}
     </p>
   )
 }
 
-function PreviewCard({ project, showSlot, onClick }: { project: Project; showSlot: boolean; onClick: () => void }) {
+function PreviewCard({ project, onClick }: { project: Project; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className="group w-full text-left cursor-pointer outline-none">
       <div className="aspect-[4/3] overflow-hidden bg-black/5 outline-offset-4 group-focus-visible:outline-2 group-focus-visible:outline-udem-black">
@@ -175,7 +174,7 @@ function PreviewCard({ project, showSlot, onClick }: { project: Project; showSlo
         )}
       </div>
       <div className="pt-3">
-        <Meta project={project} showSlot={showSlot} />
+        <Meta project={project} />
         <h3 className="font-bold text-lg leading-[1.15] mt-1.5 group-hover:underline underline-offset-4 decoration-2">
           {project.projectName}
         </h3>
@@ -185,7 +184,7 @@ function PreviewCard({ project, showSlot, onClick }: { project: Project; showSlo
   )
 }
 
-function ProjectModal({ project, showSlot, onClose }: { project: Project; showSlot: boolean; onClose: () => void }) {
+function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', handler)
@@ -225,7 +224,7 @@ function ProjectModal({ project, showSlot, onClose }: { project: Project; showSl
           </button>
         </div>
         <div className="p-5 sm:p-8">
-          <Meta project={project} showSlot={showSlot} />
+          <Meta project={project} />
           <h2 className="text-3xl sm:text-4xl font-extrabold leading-[1.05] tracking-tight mt-3">{project.projectName}</h2>
           <p className="text-udem-black/70 mt-3">{project.teamName}</p>
           {project.description && (

@@ -6,9 +6,8 @@ import { getVotes, resetAllVotes, tallyVotes } from '../lib/votes'
 import { onVotingStatusChange, setVotingOpen } from '../lib/settings'
 import Layout from '../components/Layout'
 import PinGate from '../components/PinGate'
-import FloorMap from '../components/FloorMap'
 import { Link } from 'react-router-dom'
-import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight, MapPin, Edit3, Printer } from 'lucide-react'
+import { RefreshCw, Trash2, Trophy, Users, Presentation, ToggleLeft, ToggleRight, Edit3 } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
@@ -97,45 +96,14 @@ export default function Admin() {
             </Link>
           </div>
 
-          {/* Edit + Distribution links */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <Link
-              to="/upload"
-              className="flex items-center justify-center gap-2 p-3 font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
-              style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-            >
-              <Edit3 className="w-4 h-4" />
-              Editar Proyectos
-            </Link>
-            <Link
-              to="/map-editor"
-              className="flex items-center justify-center gap-2 p-3 font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black hover:bg-gray-50"
-              style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
-            >
-              <Edit3 className="w-4 h-4" />
-              Editor del Plano
-            </Link>
-          </div>
           <Link
-            to="/distribution"
+            to="/upload"
             className="flex items-center justify-center gap-2 p-3 font-bold text-sm bg-white border-2 border-udem-black/10 text-udem-black mb-6 hover:bg-gray-50"
             style={{ transition: `background-color 200ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
           >
-            <Printer className="w-4 h-4" />
-            Distribución (imprimible)
+            <Edit3 className="w-4 h-4" />
+            Editar Proyectos
           </Link>
-
-          {/* Floor plan */}
-          <div className="mb-6 bg-white border border-gray-100 p-4">
-            <h3 className="font-bold text-sm flex items-center gap-2 mb-3">
-              <MapPin className="w-4 h-4" />
-              Plano del Evento
-              <span className="text-gray-400 text-xs ml-auto tabular-nums">
-                {projects.filter((p) => p.slotId).length}/{projects.length} con lugar
-              </span>
-            </h3>
-            <FloorMap projects={projects} showLegend={true} showLabels={true} />
-          </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 mb-6">

@@ -4,10 +4,8 @@ import Vote from './pages/Vote'
 import Upload from './pages/Upload'
 import Admin from './pages/Admin'
 import Ceremony from './pages/Ceremony'
-import MapEditor from './pages/MapEditor'
 import Info from './pages/Info'
 import Projects, { Archive } from './pages/Projects'
-import Distribution from './pages/Distribution'
 
 export default function App() {
   return (
@@ -18,12 +16,10 @@ export default function App() {
         <Route path="/upload" element={<Upload />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/ceremony" element={<Ceremony />} />
-        <Route path="/map-editor" element={<MapEditor />} />
         <Route path="/info" element={<Info />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/archivo" element={<Archive />} />
         <Route path="/archivo/:edition" element={<Archive />} />
-        <Route path="/distribution" element={<Distribution />} />
       </Routes>
     </HashRouter>
   )
