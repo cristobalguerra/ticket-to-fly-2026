@@ -5,6 +5,7 @@ import { CAREERS, type Career, type Project } from '../types'
 import { getProjects } from '../lib/projects'
 import { ARCHIVED, CURRENT, getEdition, type Edition } from '../lib/editions'
 import Layout from '../components/Layout'
+import CoverPlaceholder from '../components/CoverPlaceholder'
 import { Loader2, X } from 'lucide-react'
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
@@ -163,7 +164,7 @@ function PreviewCard({ project, onClick }: { project: Project; onClick: () => vo
   return (
     <button type="button" onClick={onClick} className="group w-full text-left cursor-pointer outline-none">
       <div className="aspect-[4/3] overflow-hidden bg-black/5 outline-offset-4 group-focus-visible:outline-2 group-focus-visible:outline-udem-black">
-        {project.coverUrl && (
+        {project.coverUrl ? (
           <img
             src={project.coverUrl}
             alt=""
@@ -171,6 +172,8 @@ function PreviewCard({ project, onClick }: { project: Project; onClick: () => vo
             className="w-full h-full object-cover group-hover:scale-[1.03]"
             style={{ transition: `transform 500ms ${EASE_OUT}` }}
           />
+        ) : (
+          <CoverPlaceholder title={project.projectName} />
         )}
       </div>
       <div className="pt-3">
@@ -210,8 +213,12 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         style={{ animation: 'slideUp 320ms cubic-bezier(0.23, 1, 0.32, 1)' }}
       >
         <div className="relative bg-black/5">
-          {project.coverUrl && (
+          {project.coverUrl ? (
             <img src={project.coverUrl} alt={project.projectName} className="w-full h-auto block" />
+          ) : (
+            <div className="aspect-[16/7]">
+              <CoverPlaceholder title={project.projectName} className="p-5 sm:p-8" />
+            </div>
           )}
           <button
             onClick={onClose}

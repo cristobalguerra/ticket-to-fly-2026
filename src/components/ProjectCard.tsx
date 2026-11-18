@@ -1,5 +1,6 @@
 import type { Project } from '../types'
 import { Check } from 'lucide-react'
+import CoverPlaceholder from './CoverPlaceholder'
 
 interface Props {
   project: Project
@@ -27,8 +28,10 @@ export default function ProjectCard({ project, selected, onClick, showCareer }: 
         <Check className="w-5 h-5 text-udem-yellow" strokeWidth={3} />
       </div>
       <div className="aspect-[4/3] overflow-hidden bg-black/5">
-        {project.coverUrl && (
+        {project.coverUrl ? (
           <img src={project.coverUrl} alt={project.projectName} className="w-full h-full object-cover" />
+        ) : (
+          <CoverPlaceholder title={project.projectName} />
         )}
       </div>
       <div className="p-4">
