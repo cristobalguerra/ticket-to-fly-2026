@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { CAREERS, type Career, type Project } from '../types'
-import { addProject, getProjects, deleteProject, updateProject } from '../lib/projects'
+import { addProject, getProjects, deleteProject, updateProject, parseEditors, canEdit } from '../lib/projects'
 import Layout from '../components/Layout'
 import AuthGate from '../components/AuthGate'
 import { useSession } from '../lib/auth'
@@ -9,8 +9,11 @@ import { Trash2, ImagePlus, Loader2, Pencil, X } from 'lucide-react'
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
 export default function Upload() {
-  // Solo administración puede borrar proyectos.
-  const { admin } = useSession()
+  // Solo administración puede borrar proyectos. Editar: administración o
+  // quien tenga su correo en el proyecto.
+  const { admin, user } = useSession()
+  const email = (user?.email ?? '').toLowerCase()
+  const [editors, setEditors] = useState('')
   const [career, setCareer] = useState<Career>('LDG')
   const [projectName, setProjectName] = useState('')
   const [teamName, setTeamName] = useState('')
@@ -52,6 +55,7 @@ export default function Upload() {
     setDescription(p.description)
     setImageFile(null)
     setImagePreview(p.coverUrl || null)
+    setEditors((p.editors ?? []).join('\n'))
     setMsg('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -64,6 +68,7 @@ export default function Upload() {
     setDescription('')
     setImageFile(null)
     setImagePreview(null)
+    setEditors('')
     setMsg('')
   }
 
@@ -81,6 +86,8 @@ export default function Upload() {
           projectName: projectName.trim(),
           teamName: teamName.trim(),
           description: description.trim(),
+          // Solo administración cambia quién puede editar.
+          ...(admin ? { editors: parseEditors(editors) } : {}),
         }, imageFile || undefined)
         setMsg('Proyecto actualizado')
         cancelEditing()
@@ -90,17 +97,20 @@ export default function Upload() {
           projectName: projectName.trim(),
           teamName: teamName.trim(),
           description: description.trim(),
+          editors: admin ? parseEditors(editors) : [email],
         }, imageFile!)
         setProjectName('')
         setTeamName('')
         setDescription('')
         setImageFile(null)
         setImagePreview(null)
-            setMsg('Proyecto agregado')
+        setEditors('')
+        setMsg('Proyecto agregado')
       }
       await loadProjects()
     } catch (err) {
-      setMsg('Error al guardar el proyecto')
+      const denied = (err as { code?: string }).code === 'permission-denied'
+      setMsg(denied ? 'Tu cuenta no tiene permiso para editar este proyecto' : 'Error al guardar el proyecto')
       console.error(err)
     } finally {
       setLoading(false)
@@ -113,6 +123,9 @@ export default function Upload() {
     if (editingId === p.id) cancelEditing()
     await loadProjects()
   }
+
+  // Los proyectos que esta cuenta puede editar van primero.
+  const sorted = [...projects].sort((x, y) => Number(canEdit(y, email, admin)) - Number(canEdit(x, email, admin)))
 
   const inputBase = 'w-full border-2 border-gray-200 p-3 outline-none bg-white'
   const inputStyle = { transition: `border-color 200ms ${EASE_OUT}, box-shadow 200ms ${EASE_OUT}` }
@@ -191,6 +204,23 @@ export default function Upload() {
               />
             </div>
 
+            {admin && (
+              <div className="stagger-in" data-i="4">
+                <label className="block text-sm font-semibold mb-1" htmlFor="editors">
+                  Correos que pueden editar <span className="text-gray-400 font-normal">(@udem.edu, uno por línea)</span>
+                </label>
+                <textarea
+                  id="editors"
+                  value={editors}
+                  onChange={(e) => setEditors(e.target.value)}
+                  className={`${inputBase} resize-none h-24 font-mono text-sm`}
+                  style={inputStyle}
+                  placeholder="nombre.apellido@udem.edu"
+                  spellCheck={false}
+                />
+              </div>
+            )}
+
             <div className="stagger-in" data-i="4">
               <label className="block text-sm font-semibold mb-1">
                 Imagen de Cover {editingId && <span className="text-gray-400 font-normal">(opcional)</span>}
@@ -238,7 +268,7 @@ export default function Upload() {
             </h2>
             {projects.length === 0 && <p className="text-gray-400 text-sm">No hay proyectos aún.</p>}
             <div className="space-y-3">
-              {projects.map((p, i) => (
+              {sorted.map((p, i) => (
                 <div
                   key={p.id}
                   className={`stagger-in flex items-center gap-3 bg-white p-3 border ${
@@ -257,14 +287,14 @@ export default function Upload() {
                     <p className="font-semibold text-sm truncate">{p.projectName}</p>
                     <p className="text-sm text-gray-400 truncate">{p.teamName}</p>
                   </div>
-                  <button
+                  {canEdit(p, email, admin) && <button
                     onClick={() => startEditing(p)}
                     aria-label="Editar"
                     className="p-2 text-gray-300 hover:text-udem-black shrink-0"
                     style={{ transition: `color 180ms ${EASE_OUT}, transform 160ms ${EASE_OUT}` }}
                   >
                     <Pencil className="w-4 h-4" />
-                  </button>
+                  </button>}
                   {admin && (
                     <button
                       onClick={() => handleDelete(p)}

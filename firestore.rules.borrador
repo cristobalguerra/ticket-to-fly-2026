@@ -21,17 +21,30 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/settings/voting).data.votingOpen == true;
     }
 
-    // Proyectos: cualquiera los ve; solo cuentas @udem.edu los crean o editan,
-    // con límites de tamaño; solo administración los borra.
-    match /projects/{id} {
-      allow read: if true;
-      allow create, update: if signedIn()
-        && request.resource.data.projectName is string
+    // Proyectos: cualquiera los ve. Los crea cualquier cuenta @udem.edu
+    // (queda como única editora). Los edita administración o quien tenga su
+    // correo en `editors`; solo administración cambia esa lista o borra.
+    function validProject() {
+      return request.resource.data.projectName is string
         && request.resource.data.projectName.size() <= 160
         && request.resource.data.teamName.size() <= 200
         && request.resource.data.description.size() <= 280
         && request.resource.data.coverUrl.size() <= 400000
+        && request.resource.data.editors is list
+        && request.resource.data.editors.size() <= 12
         && request.resource.data.career in ['LDG', 'LAED', 'LDM', 'LINT', 'LDI', 'LA', 'POSG'];
+    }
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+    match /projects/{id} {
+      allow read: if true;
+      allow create: if signedIn() && validProject()
+        && (isAdmin() || request.resource.data.editors == [myEmail()]);
+      allow update: if signedIn() && validProject()
+        && (isAdmin()
+          || (myEmail() in resource.data.get('editors', [])
+              && request.resource.data.editors == resource.data.editors));
       allow delete: if isAdmin();
     }
 

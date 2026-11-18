@@ -7,6 +7,16 @@ import { CURRENT, type Edition } from './editions'
 
 const col = collection(db, 'projects')
 
+/** Limpia una lista de correos escrita a mano: minúsculas, sin repetidos, solo @udem.edu. */
+export function parseEditors(text: string): string[] {
+  const emails = text.toLowerCase().split(/[\s,;]+/).filter((e) => /^[^@\s]+@udem\.edu$/.test(e))
+  return [...new Set(emails)]
+}
+
+export function canEdit(project: Project, email: string | null | undefined, admin: boolean): boolean {
+  return admin || (!!email && (project.editors ?? []).includes(email.toLowerCase()))
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -42,6 +52,7 @@ export async function addProject(
   data: Omit<Project, 'id' | 'coverUrl' | 'createdAt'>,
   imageFile: File,
 ): Promise<string> {
+  // `editors` llega con el correo de quien lo crea (o la lista que ponga administración).
   const coverUrl = await resizeImage(imageFile)
 
   const docRef = await addDoc(col, {
@@ -50,6 +61,7 @@ export async function addProject(
     teamName: data.teamName,
     description: data.description,
     slotId: data.slotId ?? null,
+    editors: data.editors ?? [],
     coverUrl,
     edition: CURRENT.key,
     createdAt: serverTimestamp(),
@@ -88,7 +100,7 @@ export async function getProjectsByCareer(career: Career, edition: Edition = CUR
 
 export async function updateProject(
   id: string,
-  data: Partial<Pick<Project, 'career' | 'projectName' | 'teamName' | 'description' | 'slotId'>>,
+  data: Partial<Pick<Project, 'career' | 'projectName' | 'teamName' | 'description' | 'slotId' | 'editors'>>,
   imageFile?: File,
 ) {
   const updates: Record<string, unknown> = { ...data }

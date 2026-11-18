@@ -18,6 +18,8 @@ export interface Project {
   description: string
   coverUrl: string
   slotId?: string  // assigned floor plan slot (e.g., "LDG-3")
+  /** Correos @udem.edu que pueden editar el proyecto (además de administración). */
+  editors?: string[]
   createdAt: Date
 }
 
